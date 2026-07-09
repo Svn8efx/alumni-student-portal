@@ -1,0 +1,84 @@
+const asyncHandler = require('express-async-handler');
+const ForumThread = require('../models/ForumThread');
+const notify = require('../utils/notify');
+
+// @desc    Create a new discussion thread
+// @route   POST /api/forum
+// @access  Private
+const createThread = asyncHandler(async (req, res) => {
+  const { title, body, category } = req.body;
+  const thread = await ForumThread.create({ author: req.user._id, title, body, category });
+  const populated = await thread.populate('author', 'name role avatarUrl');
+  res.status(201).json({ success: true, data: populated });
+});
+
+// @desc    List threads with optional category filter
+// @route   GET /api/forum?category=placements&page=1&limit=10
+// @access  Private
+const getThreads = asyncHandler(async (req, res) => {
+  const { category, page = 1, limit = 10 } = req.query;
+  const query = {};
+  if (category) query.category = category;
+
+  const skip = (Number(page) - 1) * Number(limit);
+  const [threads, total] = await Promise.all([
+    ForumThread.find(query)
+      .populate('author', 'name role avatarUrl')
+      .select('-replies')
+      .sort({ isPinned: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit)),
+    ForumThread.countDocuments(query),
+  ]);
+
+  res.json({ success: true, data: threads, pagination: { total, page: Number(page), pages: Math.ceil(total / limit) } });
+});
+
+// @desc    Get single thread with all replies, increments view count
+// @route   GET /api/forum/:id
+// @access  Private
+const getThreadById = asyncHandler(async (req, res) => {
+  const thread = await ForumThread.findByIdAndUpdate(
+    req.params.id,
+    { $inc: { views: 1 } },
+    { new: true }
+  )
+    .populate('author', 'name role avatarUrl company')
+    .populate('replies.author', 'name role avatarUrl');
+
+  if (!thread) {
+    res.status(404);
+    throw new Error('Thread not found');
+  }
+  res.json({ success: true, data: thread });
+});
+
+// @desc    Reply to a thread
+// @route   POST /api/forum/:id/replies
+// @access  Private
+const addReply = asyncHandler(async (req, res) => {
+  const { content } = req.body;
+  const thread = await ForumThread.findById(req.params.id);
+  if (!thread) {
+    res.status(404);
+    throw new Error('Thread not found');
+  }
+
+  thread.replies.push({ author: req.user._id, content });
+  await thread.save();
+
+  if (thread.author.toString() !== req.user._id.toString()) {
+    await notify(req, {
+      recipient: thread.author,
+      type: 'forum_reply',
+      message: `${req.user.name} replied to your thread "${thread.title}"`,
+      link: `/forum/${thread._id}`,
+      relatedId: thread._id,
+    });
+  }
+
+  const populated = await thread.populate('replies.author', 'name role avatarUrl');
+  res.status(201).json({ success: true, data: populated.replies });
+});
+
+module.exports = { createThread, getThreads, getThreadById, addReply };
