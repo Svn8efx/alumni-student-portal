@@ -87,23 +87,30 @@ const AppLayout = ({ children }) => {
             <GraduationCap size={20} className="text-brass-500" /> The Ledger
           </p>
           <div className="hidden md:block" />
-          <div className="flex items-center gap-4">
-            <NotificationBell />
-            <button onClick={() => navigate('/profile')} className="flex items-center gap-2 group">
-              <div className="w-9 h-9 rounded-full bg-ink-100 grid place-items-center text-ink-600 font-semibold overflow-hidden">
-                {user?.avatarUrl ? (
-                  <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
-                ) : (
-                  user?.name?.charAt(0)
-                )}
-              </div>
-              <div className="hidden sm:block text-left">
-                <p className="text-sm font-medium text-ink-800 group-hover:underline">{user?.name}</p>
-                <RoleBadge role={user?.role} />
-              </div>
-            </button>
-          </div>
-        </header>
+          <div className="flex items-center gap-3 sm:gap-4">
+  <NotificationBell />
+  <button onClick={() => navigate('/profile')} className="flex items-center gap-2 group">
+    <div className="w-9 h-9 rounded-full bg-ink-100 grid place-items-center text-ink-600 font-semibold overflow-hidden">
+      {user?.avatarUrl ? (
+        <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+      ) : (
+        user?.name?.charAt(0)
+      )}
+    </div>
+    <div className="hidden sm:block text-left">
+      <p className="text-sm font-medium text-ink-800 group-hover:underline">{user?.name}</p>
+      <RoleBadge role={user?.role} />
+    </div>
+  </button>
+  <button
+    onClick={handleLogout}
+    aria-label="Sign out"
+    className="md:hidden p-2 rounded-full hover:bg-ink-50 transition-colors text-ink-500"
+  >
+    <LogOut size={20} />
+  </button>
+</div>
+</header>
 
         {/* Mobile bottom nav */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-ink-900 flex justify-around py-2 z-40">
