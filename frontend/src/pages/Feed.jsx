@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Heart, MessageCircle, Send } from 'lucide-react';
+import { Heart, MessageCircle, Send, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -7,10 +7,11 @@ import RoleBadge from '../components/RoleBadge';
 
 const POST_TYPES = ['general', 'experience', 'advice', 'announcement'];
 
-const PostCard = ({ post, onLike, onComment, currentUserId }) => {
+const PostCard = ({ post, onLike, onComment, onDeletePost, onDeleteComment, currentUser }) => {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
-  const liked = post.likes.includes(currentUserId);
+  const liked = post.likes.includes(currentUser._id);
+  const canDeletePost = post.author._id === currentUser._id || currentUser.role === 'admin';
 
   const submitComment = async (e) => {
     e.preventDefault();
@@ -36,6 +37,15 @@ const PostCard = ({ post, onLike, onComment, currentUserId }) => {
           </p>
         </div>
         <span className="ml-auto text-[11px] uppercase tracking-wide text-brass-600 font-semibold">{post.type}</span>
+        {canDeletePost && (
+          <button
+            onClick={() => onDeletePost(post._id)}
+            title="Delete post"
+            className="p-1.5 text-ink-300 hover:text-red-600 transition-colors"
+          >
+            <Trash2 size={14} />
+          </button>
+        )}
       </div>
 
       <p className="text-sm text-ink-700 leading-relaxed whitespace-pre-wrap mb-4">{post.content}</p>
@@ -51,12 +61,24 @@ const PostCard = ({ post, onLike, onComment, currentUserId }) => {
 
       {showComments && (
         <div className="mt-3 pt-3 border-t border-ink-50 space-y-3">
-          {post.comments.map((c) => (
-            <div key={c._id} className="flex gap-2 text-sm">
-              <span className="font-medium text-ink-700">{c.author.name}:</span>
-              <span className="text-ink-600">{c.content}</span>
-            </div>
-          ))}
+          {post.comments.map((c) => {
+            const canDeleteComment = c.author._id === currentUser._id || currentUser.role === 'admin';
+            return (
+              <div key={c._id} className="flex gap-2 text-sm items-start group">
+                <span className="font-medium text-ink-700 shrink-0">{c.author.name}:</span>
+                <span className="text-ink-600 flex-1">{c.content}</span>
+                {canDeleteComment && (
+                  <button
+                    onClick={() => onDeleteComment(post._id, c._id)}
+                    title="Delete comment"
+                    className="p-1 text-ink-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                )}
+              </div>
+            );
+          })}
           <form onSubmit={submitComment} className="flex gap-2">
             <input
               className="input flex-1 text-sm"
@@ -112,6 +134,20 @@ const Feed = () => {
     setPosts((prev) => prev.map((p) => (p._id === postId ? { ...p, comments: data.data } : p)));
   };
 
+  const handleDeletePost = async (postId) => {
+    if (!confirm('Delete this post? This cannot be undone.')) return;
+    await api.delete(`/posts/${postId}`);
+    setPosts((prev) => prev.filter((p) => p._id !== postId));
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    if (!confirm('Delete this comment?')) return;
+    await api.delete(`/posts/${postId}/comments/${commentId}`);
+    setPosts((prev) =>
+      prev.map((p) => (p._id === postId ? { ...p, comments: p.comments.filter((c) => c._id !== commentId) } : p))
+    );
+  };
+
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
@@ -142,7 +178,15 @@ const Feed = () => {
       ) : (
         <div className="space-y-4">
           {posts.map((post) => (
-            <PostCard key={post._id} post={post} onLike={handleLike} onComment={handleComment} currentUserId={user._id} />
+            <PostCard
+              key={post._id}
+              post={post}
+              onLike={handleLike}
+              onComment={handleComment}
+              onDeletePost={handleDeletePost}
+              onDeleteComment={handleDeleteComment}
+              currentUser={user}
+            />
           ))}
         </div>
       )}

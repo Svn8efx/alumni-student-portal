@@ -93,4 +93,44 @@ const addReply = asyncHandler(async (req, res) => {
   res.status(201).json({ success: true, data: populated.replies });
 });
 
-module.exports = { createThread, getThreads, getThreadById, addReply };
+// @desc    Delete own thread (or admin can delete any)
+// @route   DELETE /api/forum/:id
+// @access  Private
+const deleteThread = asyncHandler(async (req, res) => {
+  const thread = await ForumThread.findById(req.params.id);
+  if (!thread) {
+    res.status(404);
+    throw new Error('Thread not found');
+  }
+  if (thread.author.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    res.status(403);
+    throw new Error('Not authorized to delete this thread');
+  }
+  await thread.deleteOne();
+  res.json({ success: true, message: 'Thread deleted' });
+});
+
+// @desc    Delete own reply (or admin can delete any)
+// @route   DELETE /api/forum/:id/replies/:replyId
+// @access  Private
+const deleteReply = asyncHandler(async (req, res) => {
+  const thread = await ForumThread.findById(req.params.id);
+  if (!thread) {
+    res.status(404);
+    throw new Error('Thread not found');
+  }
+  const reply = thread.replies.id(req.params.replyId);
+  if (!reply) {
+    res.status(404);
+    throw new Error('Reply not found');
+  }
+  if (reply.author.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    res.status(403);
+    throw new Error('Not authorized to delete this reply');
+  }
+  reply.deleteOne();
+  await thread.save();
+  res.json({ success: true, message: 'Reply deleted' });
+});
+
+module.exports = { createThread, getThreads, getThreadById, addReply, deleteThread, deleteReply };

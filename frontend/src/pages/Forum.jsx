@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageSquare, Eye } from 'lucide-react';
+import { MessageSquare, Eye, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 const CATEGORIES = ['general', 'placements', 'academics', 'career-advice', 'projects'];
 
 const Forum = () => {
+  const { user } = useAuth();
   const [threads, setThreads] = useState([]);
   const [category, setCategory] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -30,6 +32,14 @@ const Forum = () => {
     setForm({ title: '', body: '', category: 'general' });
     setShowForm(false);
     load();
+  };
+
+  const handleDelete = async (e, threadId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm('Delete this thread? This cannot be undone.')) return;
+    await api.delete(`/forum/${threadId}`);
+    setThreads((prev) => prev.filter((t) => t._id !== threadId));
   };
 
   return (
@@ -90,21 +100,33 @@ const Forum = () => {
         <p className="text-sm text-ink-400">No threads yet in this category.</p>
       ) : (
         <div className="space-y-3">
-          {threads.map((t) => (
-            <Link key={t._id} to={`/forum/${t._id}`} className="card p-4 flex items-center justify-between gap-4 hover:border-brass-300 transition-colors block">
-              <div className="min-w-0">
-                <p className="font-medium text-ink-800 truncate">{t.title}</p>
-                <p className="text-xs text-ink-400">
-                  by {t.author.name} · {formatDistanceToNow(new Date(t.createdAt), { addSuffix: true })} ·
-                  <span className="capitalize"> {t.category}</span>
-                </p>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-ink-500 shrink-0">
-                <span className="flex items-center gap-1"><MessageSquare size={13} /> {t.repliesCount || 0}</span>
-                <span className="flex items-center gap-1"><Eye size={13} /> {t.views}</span>
-              </div>
-            </Link>
-          ))}
+          {threads.map((t) => {
+            const canDelete = t.author._id === user._id || user.role === 'admin';
+            return (
+              <Link key={t._id} to={`/forum/${t._id}`} className="card p-4 flex items-center justify-between gap-4 hover:border-brass-300 transition-colors block">
+                <div className="min-w-0">
+                  <p className="font-medium text-ink-800 truncate">{t.title}</p>
+                  <p className="text-xs text-ink-400">
+                    by {t.author.name} · {formatDistanceToNow(new Date(t.createdAt), { addSuffix: true })} ·
+                    <span className="capitalize"> {t.category}</span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-4 text-xs text-ink-500 shrink-0">
+                  <span className="flex items-center gap-1"><MessageSquare size={13} /> {t.repliesCount || 0}</span>
+                  <span className="flex items-center gap-1"><Eye size={13} /> {t.views}</span>
+                  {canDelete && (
+                    <button
+                      onClick={(e) => handleDelete(e, t._id)}
+                      title="Delete thread"
+                      className="p-1 text-ink-300 hover:text-red-600 transition-colors"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

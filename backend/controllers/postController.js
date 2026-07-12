@@ -91,6 +91,29 @@ const addComment = asyncHandler(async (req, res) => {
   res.status(201).json({ success: true, data: populated.comments });
 });
 
+// @desc    Delete own comment (or admin can delete any)
+// @route   DELETE /api/posts/:id/comments/:commentId
+// @access  Private
+const deleteComment = asyncHandler(async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (!post) {
+    res.status(404);
+    throw new Error('Post not found');
+  }
+  const comment = post.comments.id(req.params.commentId);
+  if (!comment) {
+    res.status(404);
+    throw new Error('Comment not found');
+  }
+  if (comment.author.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    res.status(403);
+    throw new Error('Not authorized to delete this comment');
+  }
+  comment.deleteOne();
+  await post.save();
+  res.json({ success: true, message: 'Comment deleted' });
+});
+
 // @desc    Delete own post (or admin can delete any)
 // @route   DELETE /api/posts/:id
 // @access  Private
@@ -108,4 +131,4 @@ const deletePost = asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'Post deleted' });
 });
 
-module.exports = { createPost, getFeed, toggleLike, addComment, deletePost };
+module.exports = { createPost, getFeed, toggleLike, addComment, deleteComment, deletePost };

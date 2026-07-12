@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 import RoleBadge from '../components/RoleBadge';
 
 const ForumThreadPage = () => {
   const { id } = useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [thread, setThread] = useState(null);
   const [reply, setReply] = useState('');
 
@@ -25,7 +28,21 @@ const ForumThreadPage = () => {
     setReply('');
   };
 
+  const handleDeleteThread = async () => {
+    if (!confirm('Delete this entire thread? This cannot be undone.')) return;
+    await api.delete(`/forum/${id}`);
+    navigate('/forum');
+  };
+
+  const handleDeleteReply = async (replyId) => {
+    if (!confirm('Delete this reply?')) return;
+    await api.delete(`/forum/${id}/replies/${replyId}`);
+    setThread((t) => ({ ...t, replies: t.replies.filter((r) => r._id !== replyId) }));
+  };
+
   if (!thread) return <p className="text-sm text-ink-400">Loading thread…</p>;
+
+  const canDeleteThread = thread.author._id === user._id || user.role === 'admin';
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -34,8 +51,17 @@ const ForumThreadPage = () => {
       </Link>
 
       <div className="card p-6">
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center justify-between gap-2 mb-2">
           <p className="text-xs uppercase tracking-wide text-brass-600 font-semibold capitalize">{thread.category}</p>
+          {canDeleteThread && (
+            <button
+              onClick={handleDeleteThread}
+              title="Delete thread"
+              className="p-1.5 text-ink-300 hover:text-red-600 transition-colors"
+            >
+              <Trash2 size={15} />
+            </button>
+          )}
         </div>
         <h1 className="text-xl mb-2">{thread.title}</h1>
         <div className="flex items-center gap-2 mb-4">
@@ -51,16 +77,28 @@ const ForumThreadPage = () => {
           {thread.replies.length} {thread.replies.length === 1 ? 'Reply' : 'Replies'}
         </h2>
         <div className="space-y-3">
-          {thread.replies.map((r) => (
-            <div key={r._id} className="card p-4">
-              <div className="flex items-center gap-2 mb-1.5">
-                <p className="text-sm font-medium text-ink-700">{r.author.name}</p>
-                <RoleBadge role={r.author.role} />
-                <span className="text-xs text-ink-400 ml-auto">{formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}</span>
+          {thread.replies.map((r) => {
+            const canDeleteReply = r.author._id === user._id || user.role === 'admin';
+            return (
+              <div key={r._id} className="card p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <p className="text-sm font-medium text-ink-700">{r.author.name}</p>
+                  <RoleBadge role={r.author.role} />
+                  <span className="text-xs text-ink-400 ml-auto">{formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}</span>
+                  {canDeleteReply && (
+                    <button
+                      onClick={() => handleDeleteReply(r._id)}
+                      title="Delete reply"
+                      className="p-1 text-ink-300 hover:text-red-600 transition-colors"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
+                <p className="text-sm text-ink-600">{r.content}</p>
               </div>
-              <p className="text-sm text-ink-600">{r.content}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
