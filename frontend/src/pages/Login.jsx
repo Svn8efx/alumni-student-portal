@@ -73,7 +73,7 @@ const Login = () => {
         </form>
 
         <p className="text-center text-xs text-ink-400 mt-6">
-          Demo accounts (after seeding): admin@krmu.edu.in · priyanshu.alumni@krmu.edu.in · sarthak.student@krmu.edu.in — password: Passw0rd!
+          Designed & built by Vele Interns · K.R Mangalam University
         </p>
       </div>
     </div>
