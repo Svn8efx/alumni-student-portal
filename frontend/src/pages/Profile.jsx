@@ -67,6 +67,11 @@ const Profile = () => {
           <input className="input" value={form.linkedinUrl} onChange={(e) => setForm({ ...form, linkedinUrl: e.target.value })} placeholder="https://linkedin.com/in/…" />
         </div>
 
+        <div>
+          <label className="label">Skills (comma-separated)</label>
+          <input className="input" value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} placeholder="React, Node.js, Public Speaking" />
+        </div>
+
         {user.role === 'alumni' && (
           <>
             <div className="grid grid-cols-2 gap-3">
@@ -82,10 +87,6 @@ const Profile = () => {
             <div>
               <label className="label">Graduation year</label>
               <input type="number" className="input" value={form.graduationYear} onChange={(e) => setForm({ ...form, graduationYear: e.target.value })} />
-            </div>
-            <div>
-              <label className="label">Skills (comma-separated)</label>
-              <input className="input" value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} placeholder="React, Node.js, System Design" />
             </div>
             <label className="flex items-center gap-2 text-sm text-ink-700">
               <input type="checkbox" checked={form.isMentorAvailable} onChange={(e) => setForm({ ...form, isMentorAvailable: e.target.checked })} />
