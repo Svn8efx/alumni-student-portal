@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CalendarDays, MapPin, Users, Trash2 } from 'lucide-react';
+import { CalendarDays, MapPin, Users, Trash2, UserCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +13,15 @@ const Events = () => {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(true);
+  const [expandedIds, setExpandedIds] = useState(new Set());
+
+  const toggleExpanded = (id) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
 
   const canHost = user.role === 'alumni' || user.role === 'admin';
 
@@ -103,11 +112,24 @@ const Events = () => {
                   <p className="font-medium text-ink-800">{ev.title}</p>
                   <span className="seal-tag bg-ink-50 text-ink-600 capitalize shrink-0">{ev.mode}</span>
                 </div>
-                <div className="flex items-center gap-3 text-xs text-ink-400 mb-3">
+                <div className="flex items-center gap-3 text-xs text-ink-400 mb-1">
                   <span className="flex items-center gap-1"><CalendarDays size={12} /> {format(new Date(ev.date), 'MMM d, yyyy · p')}</span>
                   {ev.location && <span className="flex items-center gap-1"><MapPin size={12} /> {ev.location}</span>}
                 </div>
-                <p className="text-sm text-ink-600 line-clamp-3 mb-4">{ev.description}</p>
+                <p className="text-xs text-ink-500 flex items-center gap-1 mb-3">
+                  <UserCircle2 size={13} /> Hosted by <span className="font-medium text-ink-700">{ev.hostedBy?.name || 'Unknown'}</span>
+                  {ev.hostedBy?.company && <span className="text-ink-400">· {ev.hostedBy.company}</span>}
+                </p>
+                <p className={`text-sm text-ink-600 mb-1 ${expandedIds.has(ev._id) ? '' : 'line-clamp-3'}`}>{ev.description}</p>
+                {ev.description && ev.description.length > 140 && (
+                  <button
+                    onClick={() => toggleExpanded(ev._id)}
+                    className="text-xs font-medium text-brass-600 hover:underline mb-3 text-left"
+                  >
+                    {expandedIds.has(ev._id) ? 'Show less' : 'Read more'}
+                  </button>
+                )}
+                {!(ev.description && ev.description.length > 140) && <div className="mb-3" />}
                 <div className="mt-auto flex items-center justify-between">
                   <p className="text-xs text-ink-400 flex items-center gap-1">
                     <Users size={12} /> {ev.registrations.length}{ev.capacity > 0 ? ` / ${ev.capacity}` : ''} registered

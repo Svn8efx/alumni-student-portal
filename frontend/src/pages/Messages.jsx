@@ -1,14 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
+import { MessageSquarePlus, X } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import RoleBadge from '../components/RoleBadge';
 
 const Messages = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [inbox, setInbox] = useState([]);
-  const [people, setPeople] = useState({}); // userId -> user object, resolved from connections
+  const [connections, setConnections] = useState([]);
+  const [people, setPeople] = useState({});
   const [loading, setLoading] = useState(true);
+  const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -18,11 +23,13 @@ const Messages = () => {
         api.get('/connections?status=accepted'),
       ]);
       const map = {};
-      connectionsRes.data.data.forEach((c) => {
+      const others = connectionsRes.data.data.map((c) => {
         const other = c.requester._id === user._id ? c.receiver : c.requester;
         map[other._id] = other;
+        return other;
       });
       setPeople(map);
+      setConnections(others);
       setInbox(inboxRes.data.data);
       setLoading(false);
     };
@@ -33,10 +40,43 @@ const Messages = () => {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <div>
-        <h1 className="text-2xl mb-1">Messages</h1>
-        <p className="text-ink-500 text-sm">Direct conversations with your accepted connections.</p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl mb-1">Messages</h1>
+          <p className="text-ink-500 text-sm">Direct conversations with your accepted connections.</p>
+        </div>
+        {connections.length > 0 && (
+          <button onClick={() => setShowPicker((s) => !s)} className="btn-primary shrink-0 text-sm">
+            <MessageSquarePlus size={16} /> New Message
+          </button>
+        )}
       </div>
+
+      {showPicker && (
+        <div className="card p-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-semibold text-ink-700">Message one of your connections</p>
+            <button onClick={() => setShowPicker(false)} className="p-1 text-ink-400 hover:text-ink-700"><X size={16} /></button>
+          </div>
+          <div className="space-y-1 max-h-72 overflow-y-auto">
+            {connections.map((person) => (
+              <button
+                key={person._id}
+                onClick={() => navigate(`/messages/${person._id}`)}
+                className="w-full flex items-center gap-3 p-2 rounded-sm hover:bg-ink-50 transition-colors text-left"
+              >
+                <div className="w-9 h-9 rounded-full bg-ink-50 grid place-items-center font-semibold text-ink-700 shrink-0">
+                  {person.name.charAt(0)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-ink-800 truncate">{person.name}</p>
+                </div>
+                <RoleBadge role={person.role} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <p className="text-sm text-ink-400">Loading inbox…</p>

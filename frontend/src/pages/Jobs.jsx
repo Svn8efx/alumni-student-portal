@@ -15,6 +15,15 @@ const Jobs = () => {
   const [form, setForm] = useState(emptyForm);
   const [filterType, setFilterType] = useState('');
   const [loading, setLoading] = useState(true);
+  const [expandedIds, setExpandedIds] = useState(new Set());
+
+  const toggleExpanded = (id) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
 
   const canPost = user.role === 'alumni' || user.role === 'admin';
 
@@ -103,7 +112,17 @@ const Jobs = () => {
                 <span className="flex items-center gap-1"><MapPin size={12} /> {job.location}</span>
                 {job.deadline && <span className="flex items-center gap-1"><Calendar size={12} /> {format(new Date(job.deadline), 'MMM d, yyyy')}</span>}
               </div>
-              <p className="text-sm text-ink-600 line-clamp-3 mb-3">{job.description}</p>
+              <p className={`text-sm text-ink-600 mb-1 ${expandedIds.has(job._id) ? '' : 'line-clamp-3'}`}>{job.description}</p>
+              {job.description && job.description.length > 140 ? (
+                <button
+                  onClick={() => toggleExpanded(job._id)}
+                  className="text-xs font-medium text-brass-600 hover:underline mb-2 text-left"
+                >
+                  {expandedIds.has(job._id) ? 'Show less' : 'Read more'}
+                </button>
+              ) : (
+                <div className="mb-2" />
+              )}
               {job.skillsRequired?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-4">
                   {job.skillsRequired.map((s) => <span key={s} className="text-[11px] bg-ink-50 text-ink-600 px-2 py-0.5 rounded-full">{s}</span>)}
