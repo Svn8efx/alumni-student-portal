@@ -100,7 +100,7 @@ const Forum = () => {
                 </p>
               </div>
               <div className="flex items-center gap-4 text-xs text-ink-500 shrink-0">
-                <span className="flex items-center gap-1"><MessageSquare size={13} /> {t.replies?.length || 0}</span>
+                <span className="flex items-center gap-1"><MessageSquare size={13} /> {t.repliesCount || 0}</span>
                 <span className="flex items-center gap-1"><Eye size={13} /> {t.views}</span>
               </div>
             </Link>

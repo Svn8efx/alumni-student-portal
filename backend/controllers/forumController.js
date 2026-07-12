@@ -17,18 +17,30 @@ const createThread = asyncHandler(async (req, res) => {
 // @access  Private
 const getThreads = asyncHandler(async (req, res) => {
   const { category, page = 1, limit = 10 } = req.query;
-  const query = {};
-  if (category) query.category = category;
+  const match = {};
+  if (category) match.category = category;
 
   const skip = (Number(page) - 1) * Number(limit);
+
   const [threads, total] = await Promise.all([
-    ForumThread.find(query)
-      .populate('author', 'name role avatarUrl')
-      .select('-replies')
-      .sort({ isPinned: -1, createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit)),
-    ForumThread.countDocuments(query),
+    ForumThread.aggregate([
+      { $match: match },
+      { $sort: { isPinned: -1, createdAt: -1 } },
+      { $skip: skip },
+      { $limit: Number(limit) },
+      { $addFields: { repliesCount: { $size: { $ifNull: ['$replies', []] } } } },
+      { $project: { replies: 0 } },
+      { $lookup: { from: 'users', localField: 'author', foreignField: '_id', as: 'author' } },
+      { $unwind: '$author' },
+      {
+        $project: {
+          title: 1, body: 1, category: 1, isPinned: 1, views: 1, repliesCount: 1,
+          createdAt: 1, updatedAt: 1,
+          'author._id': 1, 'author.name': 1, 'author.role': 1, 'author.avatarUrl': 1,
+        },
+      },
+    ]),
+    ForumThread.countDocuments(match),
   ]);
 
   res.json({ success: true, data: threads, pagination: { total, page: Number(page), pages: Math.ceil(total / limit) } });
