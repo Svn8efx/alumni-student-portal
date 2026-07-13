@@ -11,7 +11,7 @@ const ProtectedRoute = ({ children, roles }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen grid place-items-center bg-paper">
+      <div className="min-h-screen grid place-items-center bg-paper dark:bg-ink-900">
         <p className="text-ink-400 text-sm tracking-wide">Loading your session…</p>
       </div>
     );

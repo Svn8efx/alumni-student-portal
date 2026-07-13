@@ -26,7 +26,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-paper grid place-items-center px-4">
+    <div className="min-h-screen bg-paper dark:bg-ink-900 grid place-items-center px-4">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
           <GraduationCap size={32} className="text-ink-800 mb-2" />

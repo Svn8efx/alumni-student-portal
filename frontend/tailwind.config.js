@@ -1,11 +1,10 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
-        // "Ledger" palette — an academic register/seal aesthetic rather than
-        // generic SaaS defaults: deep ink navy, brass seal accent, ivory paper.
         ink: {
           50: '#eef1f7',
           100: '#d7deec',

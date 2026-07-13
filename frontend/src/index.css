@@ -4,12 +4,14 @@
 
 @layer base {
   body {
-    @apply antialiased;
+    @apply antialiased bg-paper text-ink-800 transition-colors duration-200;
+  }
+  .dark body {
+    @apply bg-ink-900 text-paper;
   }
   h1, h2, h3, h4 {
-    @apply font-display text-ink-900;
+    @apply font-display text-ink-900 dark:text-paper;
   }
-  /* Visible keyboard focus everywhere, per accessibility requirements */
   a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
     outline: 2px solid theme('colors.brass.500');
     outline-offset: 2px;
@@ -18,22 +20,22 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-sm bg-ink-800 text-paper px-4 py-2.5 text-sm font-medium tracking-wide hover:bg-ink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-sm bg-ink-800 text-paper px-4 py-2.5 text-sm font-medium tracking-wide hover:bg-ink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:bg-brass-500 dark:text-ink-900 dark:hover:bg-brass-400;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-sm border border-ink-300 text-ink-700 px-4 py-2.5 text-sm font-medium hover:bg-ink-50 transition-colors disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-sm border border-ink-300 text-ink-700 px-4 py-2.5 text-sm font-medium hover:bg-ink-50 transition-colors disabled:opacity-50 dark:border-ink-600 dark:text-ink-200 dark:hover:bg-ink-800;
   }
   .btn-brass {
     @apply inline-flex items-center justify-center gap-2 rounded-sm bg-brass-500 text-ink-900 px-4 py-2.5 text-sm font-semibold hover:bg-brass-400 transition-colors disabled:opacity-50;
   }
   .card {
-    @apply bg-white border border-ink-100 rounded-sm shadow-seal;
+    @apply bg-white border border-ink-100 rounded-sm shadow-seal dark:bg-ink-800 dark:border-ink-700;
   }
   .input {
-    @apply w-full rounded-sm border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-800 placeholder:text-ink-300 focus:border-brass-400 transition-colors;
+    @apply w-full rounded-sm border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-800 placeholder:text-ink-300 focus:border-brass-400 transition-colors dark:bg-ink-900 dark:border-ink-600 dark:text-paper dark:placeholder:text-ink-500;
   }
   .label {
-    @apply block text-xs font-semibold uppercase tracking-wider text-ink-500 mb-1.5;
+    @apply block text-xs font-semibold uppercase tracking-wider text-ink-500 mb-1.5 dark:text-ink-300;
   }
   .seal-tag {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider;

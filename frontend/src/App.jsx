@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './layouts/AppLayout';
+import { useDarkMode } from './hooks/useDarkMode';
 
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -19,7 +20,6 @@ import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import NotFound from './pages/NotFound';
 
-// Wraps a page with the shared sidebar/topbar chrome
 const withLayout = (Component) => (
   <AppLayout>
     <Component />
@@ -27,6 +27,8 @@ const withLayout = (Component) => (
 );
 
 function App() {
+  useDarkMode();
+
   return (
     <Routes>
       <Route path="/" element={<Landing />} />

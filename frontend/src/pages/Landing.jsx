@@ -10,7 +10,7 @@ const FEATURES = [
 // Public marketing page — the "cover" of the ledger before a visitor signs the register.
 const Landing = () => {
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="min-h-screen bg-paper dark:bg-ink-900">
       <header className="max-w-6xl mx-auto flex items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2">
           <GraduationCap size={26} className="text-ink-800" />
