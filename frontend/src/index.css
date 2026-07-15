@@ -10,8 +10,16 @@
     @apply bg-ink-900 text-paper;
   }
   h1, h2, h3, h4 {
-    @apply font-display text-ink-900 dark:text-paper;
+    @apply font-display;
+    /* No color set here on purpose — headings inherit color from their
+       parent context (usually the body's text color). Forcing a fixed
+       color here previously made headings invisible whenever they sat
+       inside an intentionally dark-surfaced card (e.g. a navy CTA banner
+       in light mode), since the forced color beat the parent's intended
+       light text. Letting it inherit fixes that in both light and dark
+       mode automatically. */
   }
+  /* Visible keyboard focus everywhere, per accessibility requirements */
   a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
     outline: 2px solid theme('colors.brass.500');
     outline-offset: 2px;
@@ -41,3 +49,31 @@
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider;
   }
 }
+
+/*
+ * Global dark-mode text/background/border rebalancing.
+ *
+ * Nearly every page in this app uses raw utility classes like `text-ink-600`
+ * or `bg-ink-50` directly in its JSX (not just the shared .card/.input/.btn
+ * classes above). Those utilities were designed for a LIGHT page — dark navy
+ * text on white or pale backgrounds. When the page background flips dark,
+ * that same dark-navy text becomes dark-on-dark and disappears.
+ *
+ * Rather than editing every single page component individually, these rules
+ * catch every use of the common "ink" text/background/border shades and
+ * rebalance them automatically wherever they appear, whenever <html> has the
+ * "dark" class. This is what actually fixes body text, card descriptions,
+ * event/job listings, forum threads, etc. across the whole app in one place.
+ */
+.dark .text-ink-900 { @apply text-paper; }
+.dark .text-ink-800 { @apply text-paper; }
+.dark .text-ink-700 { @apply text-ink-100; }
+.dark .text-ink-600 { @apply text-ink-200; }
+.dark .text-ink-500 { @apply text-ink-300; }
+.dark .text-ink-400 { @apply text-ink-300; }
+
+.dark .bg-ink-50 { @apply bg-ink-700; }
+.dark .bg-ink-100 { @apply bg-ink-700; }
+
+.dark .border-ink-100 { @apply border-ink-700; }
+.dark .border-ink-200 { @apply border-ink-600; }
