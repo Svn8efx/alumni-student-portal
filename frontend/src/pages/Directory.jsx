@@ -1,26 +1,38 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Search, Briefcase, GraduationCap } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Search, Briefcase, GraduationCap, Check, Clock, MessageCircle } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import RoleBadge from '../components/RoleBadge';
 
 const Directory = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [role, setRole] = useState(searchParams.get('role') || '');
   const [loading, setLoading] = useState(true);
-  const [pending, setPending] = useState({}); // userId -> true once request sent
+  const [connectionMap, setConnectionMap] = useState({});
 
   const load = async () => {
     setLoading(true);
     const params = {};
     if (role) params.role = role;
     if (search) params.search = search;
-    const { data } = await api.get('/users', { params });
-    setUsers(data.data.filter((u) => u._id !== user._id));
+    const [usersRes, connectionsRes] = await Promise.all([
+      api.get('/users', { params }),
+      api.get('/connections'),
+    ]);
+    setUsers(usersRes.data.data.filter((u) => u._id !== user._id));
+
+    const map = {};
+    connectionsRes.data.data.forEach((c) => {
+      const isRequester = c.requester._id === user._id;
+      const otherId = isRequester ? c.receiver._id : c.requester._id;
+      map[otherId] = { status: c.status, direction: isRequester ? 'sent' : 'received' };
+    });
+    setConnectionMap(map);
     setLoading(false);
   };
 
@@ -37,7 +49,7 @@ const Directory = () => {
   const handleConnect = async (receiverId) => {
     try {
       await api.post('/connections', { receiverId, message: 'Hi! I would love to connect.' });
-      setPending((p) => ({ ...p, [receiverId]: true }));
+      setConnectionMap((m) => ({ ...m, [receiverId]: { status: 'pending', direction: 'sent' } }));
     } catch (err) {
       alert(err.response?.data?.message || 'Could not send request');
     }
@@ -83,49 +95,70 @@ const Directory = () => {
         <p className="text-sm text-ink-400">No matching profiles found.</p>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {users.map((u) => (
-            <div key={u._id} className="card p-5 flex flex-col">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-11 h-11 rounded-full bg-ink-50 grid place-items-center font-semibold text-ink-700 overflow-hidden shrink-0">
-                  {u.avatarUrl ? <img src={u.avatarUrl} alt={u.name} className="w-full h-full object-cover" /> : u.name.charAt(0)}
+          {users.map((u) => {
+            const connection = connectionMap[u._id];
+            return (
+              <div key={u._id} className="card p-5 flex flex-col">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-11 h-11 rounded-full bg-ink-50 grid place-items-center font-semibold text-ink-700 overflow-hidden shrink-0">
+                    {u.avatarUrl ? <img src={u.avatarUrl} alt={u.name} className="w-full h-full object-cover" /> : u.name.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-ink-800 truncate">{u.name}</p>
+                    <RoleBadge role={u.role} />
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="font-medium text-ink-800 truncate">{u.name}</p>
-                  <RoleBadge role={u.role} />
-                </div>
+
+                {u.role === 'alumni' ? (
+                  <div className="text-sm text-ink-600 space-y-1 mb-3">
+                    {u.designation && <p className="flex items-center gap-1.5"><Briefcase size={13} /> {u.designation} {u.company && `at ${u.company}`}</p>}
+                    {u.graduationYear && <p className="flex items-center gap-1.5"><GraduationCap size={13} /> Class of {u.graduationYear}</p>}
+                  </div>
+                ) : (
+                  <div className="text-sm text-ink-600 space-y-1 mb-3">
+                    {u.branch && <p>{u.branch}</p>}
+                    {u.currentYear && <p>Year {u.currentYear}</p>}
+                  </div>
+                )}
+
+                {u.bio && <p className="text-xs text-ink-500 line-clamp-2 mb-4">{u.bio}</p>}
+
+                {u.skills?.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {u.skills.slice(0, 4).map((s) => (
+                      <span key={s} className="text-[11px] bg-ink-50 text-ink-600 px-2 py-0.5 rounded-full">{s}</span>
+                    ))}
+                  </div>
+                )}
+
+                {connection?.status === 'accepted' ? (
+                  <div className="mt-auto flex gap-2">
+                    <button disabled className="btn-secondary flex-1 text-xs !opacity-100 !cursor-default text-moss-600 border-moss-500/30">
+                      <Check size={14} /> Connected
+                    </button>
+                    <button
+                      onClick={() => navigate(`/messages/${u._id}`)}
+                      title="Message"
+                      className="btn-secondary px-3 text-xs shrink-0"
+                    >
+                      <MessageCircle size={14} />
+                    </button>
+                  </div>
+                ) : connection?.status === 'pending' ? (
+                  <button disabled className="btn-secondary mt-auto text-xs !opacity-100 !cursor-default">
+                    <Clock size={14} /> {connection.direction === 'sent' ? 'Request sent' : 'Respond in Connections'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleConnect(u._id)}
+                    className="btn-secondary mt-auto text-xs"
+                  >
+                    Connect
+                  </button>
+                )}
               </div>
-
-              {u.role === 'alumni' ? (
-                <div className="text-sm text-ink-600 space-y-1 mb-3">
-                  {u.designation && <p className="flex items-center gap-1.5"><Briefcase size={13} /> {u.designation} {u.company && `at ${u.company}`}</p>}
-                  {u.graduationYear && <p className="flex items-center gap-1.5"><GraduationCap size={13} /> Class of {u.graduationYear}</p>}
-                </div>
-              ) : (
-                <div className="text-sm text-ink-600 space-y-1 mb-3">
-                  {u.branch && <p>{u.branch}</p>}
-                  {u.currentYear && <p>Year {u.currentYear}</p>}
-                </div>
-              )}
-
-              {u.bio && <p className="text-xs text-ink-500 line-clamp-2 mb-4">{u.bio}</p>}
-
-              {u.skills?.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {u.skills.slice(0, 4).map((s) => (
-                    <span key={s} className="text-[11px] bg-ink-50 text-ink-600 px-2 py-0.5 rounded-full">{s}</span>
-                  ))}
-                </div>
-              )}
-
-              <button
-                onClick={() => handleConnect(u._id)}
-                disabled={pending[u._id]}
-                className="btn-secondary mt-auto text-xs"
-              >
-                {pending[u._id] ? 'Request sent' : 'Connect'}
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
