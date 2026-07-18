@@ -97,13 +97,17 @@ const Dashboard = () => {
         <div className="space-y-3">
           {recentPosts.length === 0 && <p className="text-sm text-ink-400">No posts yet — be the first to share something.</p>}
           {recentPosts.map((post) => (
-            <div key={post._id} className="card p-4">
+            <Link
+              key={post._id}
+              to={`/feed?post=${post._id}`}
+              className="card p-4 block hover:border-brass-300 transition-colors"
+            >
               <div className="flex items-center gap-2 mb-2">
                 <p className="text-sm font-medium text-ink-800">{post.author.name}</p>
                 <RoleBadge role={post.author.role} />
               </div>
               <p className="text-sm text-ink-600 line-clamp-2">{post.content}</p>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

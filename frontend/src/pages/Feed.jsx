@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Heart, MessageCircle, Send, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import api from '../api/axios';
@@ -7,8 +8,8 @@ import RoleBadge from '../components/RoleBadge';
 
 const POST_TYPES = ['general', 'experience', 'advice', 'announcement'];
 
-const PostCard = ({ post, onLike, onComment, onDeletePost, onDeleteComment, currentUser }) => {
-  const [showComments, setShowComments] = useState(false);
+const PostCard = ({ post, onLike, onComment, onDeletePost, onDeleteComment, currentUser, defaultOpen, cardRef, highlighted }) => {
+  const [showComments, setShowComments] = useState(defaultOpen);
   const [commentText, setCommentText] = useState('');
   const liked = post.likes.includes(currentUser._id);
   const canDeletePost = post.author._id === currentUser._id || currentUser.role === 'admin';
@@ -21,7 +22,7 @@ const PostCard = ({ post, onLike, onComment, onDeletePost, onDeleteComment, curr
   };
 
   return (
-    <div className="card p-5">
+    <div ref={cardRef} className={`card p-5 transition-shadow ${highlighted ? 'ring-2 ring-brass-400' : ''}`}>
       <div className="flex items-center gap-3 mb-3">
         <div className="w-10 h-10 rounded-full bg-ink-50 grid place-items-center font-semibold text-ink-700 shrink-0">
           {post.author.name.charAt(0)}
@@ -96,10 +97,14 @@ const PostCard = ({ post, onLike, onComment, onDeletePost, onDeleteComment, curr
 
 const Feed = () => {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const targetPostId = searchParams.get('post');
   const [posts, setPosts] = useState([]);
   const [content, setContent] = useState('');
   const [type, setType] = useState('general');
   const [loading, setLoading] = useState(true);
+  const targetRef = useRef(null);
+  const hasScrolled = useRef(false);
 
   const load = async () => {
     setLoading(true);
@@ -109,6 +114,15 @@ const Feed = () => {
   };
 
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    if (!targetPostId || loading || hasScrolled.current) return;
+    if (targetRef.current) {
+      targetRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      hasScrolled.current = true;
+      setTimeout(() => setSearchParams({}, { replace: true }), 1200);
+    }
+  }, [targetPostId, loading, posts, setSearchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -186,6 +200,9 @@ const Feed = () => {
               onDeletePost={handleDeletePost}
               onDeleteComment={handleDeleteComment}
               currentUser={user}
+              defaultOpen={post._id === targetPostId}
+              highlighted={post._id === targetPostId}
+              cardRef={post._id === targetPostId ? targetRef : null}
             />
           ))}
         </div>
