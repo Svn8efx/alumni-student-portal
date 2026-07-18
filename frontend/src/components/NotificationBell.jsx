@@ -23,7 +23,6 @@ const NotificationBell = () => {
     fetchNotifications();
   }, []);
 
-  // Live-append notifications pushed over the socket
   useEffect(() => {
     if (!socket) return;
     const handler = (notification) => {
@@ -67,7 +66,7 @@ const NotificationBell = () => {
       <button
         onClick={handleOpen}
         aria-label="Notifications"
-        className="relative p-2 rounded-full hover:bg-ink-50 transition-colors"
+        className="relative p-2 rounded-full hover:bg-ink-50 dark:hover:bg-ink-700 transition-colors"
       >
         <Bell size={20} className="text-ink-600" />
         {unreadCount > 0 && (
@@ -79,7 +78,7 @@ const NotificationBell = () => {
 
       {open && (
         <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto card z-50">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-ink-100">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-ink-100 dark:border-ink-700">
             <h3 className="text-sm font-semibold text-ink-800">Notifications</h3>
             {unreadCount > 0 && (
               <button onClick={markAllRead} className="text-xs text-brass-600 hover:underline">
@@ -95,8 +94,8 @@ const NotificationBell = () => {
                 <li key={n._id}>
                   <button
                     onClick={() => handleClickNotification(n)}
-                    className={`w-full text-left px-4 py-3 text-sm border-b border-ink-50 hover:bg-ink-50 transition-colors ${
-                      !n.isRead ? 'bg-brass-50/60' : ''
+                    className={`w-full text-left px-4 py-3 text-sm border-b border-ink-50 dark:border-ink-700 hover:bg-ink-50 dark:hover:bg-ink-700 transition-colors ${
+                      !n.isRead ? 'bg-brass-50/60 dark:bg-brass-500/10' : ''
                     }`}
                   >
                     <p className="text-ink-700">{n.message}</p>

@@ -73,7 +73,7 @@ const Conversation = () => {
         {messages.map((m) => (
           <div key={m._id} className={`flex ${m.sender === user._id ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[75%] px-3.5 py-2 rounded-sm text-sm ${
-              m.sender === user._id ? 'bg-ink-800 text-white' : 'bg-white border border-ink-100 text-ink-700'
+              m.sender === user._id ? 'bg-ink-800 text-white' : 'bg-white dark:bg-ink-700 border border-ink-100 dark:border-ink-600 text-ink-700'
             }`}>
               <p>{m.content}</p>
               <p className={`text-[10px] mt-1 ${m.sender === user._id ? 'text-ink-300' : 'text-ink-400'}`}>
