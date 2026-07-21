@@ -3,6 +3,8 @@ import { Briefcase, MapPin, Calendar, ExternalLink, Trash2 } from 'lucide-react'
 import { format } from 'date-fns';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 const JOB_TYPES = ['internship', 'full-time', 'part-time', 'freelance'];
 
@@ -10,6 +12,8 @@ const emptyForm = { title: '', company: '', type: 'internship', location: '', de
 
 const Jobs = () => {
   const { user } = useAuth();
+  const toast = useToast();
+  const confirmDialog = useConfirm();
   const [jobs, setJobs] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
@@ -48,12 +52,17 @@ const Jobs = () => {
     setForm(emptyForm);
     setShowForm(false);
     load();
+    toast.success('Opportunity published.');
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Remove this posting?')) return;
+    const ok = await confirmDialog('This posting will be permanently removed.', {
+      title: 'Remove this posting?',
+    });
+    if (!ok) return;
     await api.delete(`/jobs/${id}`);
     load();
+    toast.success('Posting removed.');
   };
 
   return (

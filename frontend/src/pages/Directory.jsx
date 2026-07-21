@@ -3,11 +3,13 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Search, Briefcase, GraduationCap, Check, Clock, MessageCircle } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import RoleBadge from '../components/RoleBadge';
 
 const Directory = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
@@ -50,8 +52,9 @@ const Directory = () => {
     try {
       await api.post('/connections', { receiverId, message: 'Hi! I would love to connect.' });
       setConnectionMap((m) => ({ ...m, [receiverId]: { status: 'pending', direction: 'sent' } }));
+      toast.success('Connection request sent.');
     } catch (err) {
-      alert(err.response?.data?.message || 'Could not send request');
+      toast.error(err.response?.data?.message || 'Could not send request');
     }
   };
 

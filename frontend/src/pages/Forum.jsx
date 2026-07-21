@@ -4,11 +4,15 @@ import { MessageSquare, Eye, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 const CATEGORIES = ['general', 'placements', 'academics', 'career-advice', 'projects'];
 
 const Forum = () => {
   const { user } = useAuth();
+  const toast = useToast();
+  const confirmDialog = useConfirm();
   const [threads, setThreads] = useState([]);
   const [category, setCategory] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -32,14 +36,19 @@ const Forum = () => {
     setForm({ title: '', body: '', category: 'general' });
     setShowForm(false);
     load();
+    toast.success('Thread posted.');
   };
 
   const handleDelete = async (e, threadId) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!confirm('Delete this thread? This cannot be undone.')) return;
+    const ok = await confirmDialog('This thread and all its replies will be permanently removed.', {
+      title: 'Delete this thread?',
+    });
+    if (!ok) return;
     await api.delete(`/forum/${threadId}`);
     setThreads((prev) => prev.filter((t) => t._id !== threadId));
+    toast.success('Thread deleted.');
   };
 
   return (

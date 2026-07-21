@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import RoleBadge from '../components/RoleBadge';
 
 const Profile = () => {
   const { user, setUser } = useAuth();
+  const toast = useToast();
   const [form, setForm] = useState({
     name: user.name || '',
     bio: user.bio || '',
@@ -17,7 +19,6 @@ const Profile = () => {
     skills: (user.skills || []).join(', '),
     isMentorAvailable: user.isMentorAvailable || false,
   });
-  const [saved, setSaved] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,8 +26,7 @@ const Profile = () => {
     const { data } = await api.put('/users/me', payload);
     setUser(data.data);
     localStorage.setItem('user', JSON.stringify(data.data));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    toast.success('Profile updated.');
   };
 
   return (
@@ -45,8 +45,6 @@ const Profile = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="card p-6 space-y-4">
-        {saved && <p className="text-sm text-moss-600 bg-moss-500/10 rounded-sm px-3 py-2">Profile updated.</p>}
-
         <div>
           <label className="label">Full name</label>
           <input className="input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />

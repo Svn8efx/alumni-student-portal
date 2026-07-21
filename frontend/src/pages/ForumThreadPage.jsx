@@ -4,12 +4,16 @@ import { ArrowLeft, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import RoleBadge from '../components/RoleBadge';
 
 const ForumThreadPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
+  const confirmDialog = useConfirm();
   const [thread, setThread] = useState(null);
   const [reply, setReply] = useState('');
 
@@ -29,15 +33,23 @@ const ForumThreadPage = () => {
   };
 
   const handleDeleteThread = async () => {
-    if (!confirm('Delete this entire thread? This cannot be undone.')) return;
+    const ok = await confirmDialog('This thread and all its replies will be permanently removed.', {
+      title: 'Delete this thread?',
+    });
+    if (!ok) return;
     await api.delete(`/forum/${id}`);
+    toast.success('Thread deleted.');
     navigate('/forum');
   };
 
   const handleDeleteReply = async (replyId) => {
-    if (!confirm('Delete this reply?')) return;
+    const ok = await confirmDialog('This reply will be permanently removed.', {
+      title: 'Delete this reply?',
+    });
+    if (!ok) return;
     await api.delete(`/forum/${id}/replies/${replyId}`);
     setThread((t) => ({ ...t, replies: t.replies.filter((r) => r._id !== replyId) }));
+    toast.success('Reply deleted.');
   };
 
   if (!thread) return <p className="text-sm text-ink-400">Loading thread…</p>;

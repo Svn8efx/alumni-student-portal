@@ -4,6 +4,8 @@ import { Heart, MessageCircle, Send, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import RoleBadge from '../components/RoleBadge';
 
 const POST_TYPES = ['general', 'experience', 'advice', 'announcement'];
@@ -97,6 +99,8 @@ const PostCard = ({ post, onLike, onComment, onDeletePost, onDeleteComment, curr
 
 const Feed = () => {
   const { user } = useAuth();
+  const toast = useToast();
+  const confirmDialog = useConfirm();
   const [searchParams, setSearchParams] = useSearchParams();
   const targetPostId = searchParams.get('post');
   const [posts, setPosts] = useState([]);
@@ -130,6 +134,7 @@ const Feed = () => {
     const { data } = await api.post('/posts', { content, type });
     setPosts((prev) => [data.data, ...prev]);
     setContent('');
+    toast.success('Posted to the feed.');
   };
 
   const handleLike = async (postId) => {
@@ -149,17 +154,25 @@ const Feed = () => {
   };
 
   const handleDeletePost = async (postId) => {
-    if (!confirm('Delete this post? This cannot be undone.')) return;
+    const ok = await confirmDialog('This post and all its comments will be permanently removed.', {
+      title: 'Delete this post?',
+    });
+    if (!ok) return;
     await api.delete(`/posts/${postId}`);
     setPosts((prev) => prev.filter((p) => p._id !== postId));
+    toast.success('Post deleted.');
   };
 
   const handleDeleteComment = async (postId, commentId) => {
-    if (!confirm('Delete this comment?')) return;
+    const ok = await confirmDialog('This comment will be permanently removed.', {
+      title: 'Delete this comment?',
+    });
+    if (!ok) return;
     await api.delete(`/posts/${postId}/comments/${commentId}`);
     setPosts((prev) =>
       prev.map((p) => (p._id === postId ? { ...p, comments: p.comments.filter((c) => c._id !== commentId) } : p))
     );
+    toast.success('Comment deleted.');
   };
 
   return (

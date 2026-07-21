@@ -3,11 +3,15 @@ import { CalendarDays, MapPin, Users, Trash2, UserCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 const emptyForm = { title: '', description: '', date: '', mode: 'online', location: '', capacity: 0 };
 
 const Events = () => {
   const { user } = useAuth();
+  const toast = useToast();
+  const confirmDialog = useConfirm();
   const [events, setEvents] = useState([]);
   const [when, setWhen] = useState('upcoming');
   const [showForm, setShowForm] = useState(false);
@@ -40,6 +44,7 @@ const Events = () => {
     setForm(emptyForm);
     setShowForm(false);
     load();
+    toast.success('Event published.');
   };
 
   const handleRegister = async (eventId) => {
@@ -53,12 +58,18 @@ const Events = () => {
         return { ...ev, registrations };
       })
     );
+    toast.success(data.data.registered ? 'Registered for event.' : 'Registration cancelled.');
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Cancel this event?')) return;
+    const ok = await confirmDialog('This event will be permanently removed.', {
+      title: 'Cancel this event?',
+      confirmLabel: 'Cancel Event',
+    });
+    if (!ok) return;
     await api.delete(`/events/${id}`);
     load();
+    toast.success('Event cancelled.');
   };
 
   return (
