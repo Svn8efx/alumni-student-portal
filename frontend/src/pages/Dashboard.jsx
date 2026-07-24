@@ -6,9 +6,14 @@ import { useAuth } from '../context/AuthContext';
 import RoleBadge from '../components/RoleBadge';
 
 const StatCard = ({ icon: Icon, label, value, to }) => (
-  <Link to={to} className="card p-5 flex items-center gap-4 hover:border-brass-300 transition-colors">
-    <div className="w-11 h-11 rounded-full bg-ink-50 grid place-items-center">
-      <Icon size={20} className="text-ink-700" />
+  <Link
+    to={to}
+    className="rounded-sm p-5 flex items-center gap-4 transition-colors border
+      bg-white/60 border-white/60 backdrop-blur-md shadow-seal hover:border-brass-300
+      dark:bg-white/5 dark:border-white/10 dark:hover:border-brass-400/40"
+  >
+    <div className="w-11 h-11 rounded-full bg-ink-50 dark:bg-white/10 grid place-items-center shrink-0">
+      <Icon size={20} className="text-ink-700 dark:text-brass-400" />
     </div>
     <div>
       <p className="text-2xl font-display text-ink-900">{value}</p>
@@ -49,66 +54,86 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-2xl">Welcome, {user.name.split(' ')[0]}</h1>
-          <RoleBadge role={user.role} />
-        </div>
-        <p className="text-ink-500 text-sm">{roleGreeting[user.role]}</p>
-      </div>
+    <div className="relative">
+      {/* Soft, static (non-animated) navy/brass gradient wash behind the page content —
+          gives the glass cards below something to catch light against, without the
+          performance cost of the animated aurora used on the pre-login pages. */}
+      <div
+        className="fixed inset-0 pointer-events-none -z-10"
+        style={{
+          background: `
+            radial-gradient(circle at 12% 15%, rgba(205,162,63,0.14), transparent 40%),
+            radial-gradient(circle at 88% 10%, rgba(91,113,159,0.12), transparent 45%),
+            radial-gradient(circle at 50% 95%, rgba(205,162,63,0.08), transparent 50%)
+          `,
+        }}
+      />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={Handshake} label="Connections" value={stats.connections} to="/connections" />
-        <StatCard icon={Users} label="Pending Requests" value={stats.pending} to="/connections" />
-        <StatCard icon={Briefcase} label="Open Postings" value={stats.jobs} to="/jobs" />
-        <StatCard icon={CalendarDays} label="Upcoming Events" value={stats.events} to="/events" />
-      </div>
-
-      {user.role === 'student' && (
-        <div className="card p-6 bg-ink-900 text-paper flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h2 className="font-display text-xl mb-1">Looking for a mentor?</h2>
-            <p className="text-ink-300 text-sm">Browse verified alumni open to mentorship and send a connection request.</p>
+      <div className="space-y-8">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-2xl">Welcome, {user.name.split(' ')[0]}</h1>
+            <RoleBadge role={user.role} />
           </div>
-          <Link to="/directory?role=alumni" className="btn-brass shrink-0">
-            Browse mentors <ArrowRight size={16} />
-          </Link>
+          <p className="text-ink-500 text-sm">{roleGreeting[user.role]}</p>
         </div>
-      )}
 
-      {user.role === 'alumni' && (
-        <div className="card p-6 bg-ink-900 text-paper flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h2 className="font-display text-xl mb-1">Have an opening at your company?</h2>
-            <p className="text-ink-300 text-sm">Post it directly to students of your own institution.</p>
-          </div>
-          <Link to="/jobs" className="btn-brass shrink-0">
-            Post an opportunity <ArrowRight size={16} />
-          </Link>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard icon={Handshake} label="Connections" value={stats.connections} to="/connections" />
+          <StatCard icon={Users} label="Pending Requests" value={stats.pending} to="/connections" />
+          <StatCard icon={Briefcase} label="Open Postings" value={stats.jobs} to="/jobs" />
+          <StatCard icon={CalendarDays} label="Upcoming Events" value={stats.events} to="/events" />
         </div>
-      )}
 
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-display text-ink-900">Recent from the Knowledge Feed</h2>
-          <Link to="/feed" className="text-sm text-brass-600 hover:underline">View all</Link>
-        </div>
-        <div className="space-y-3">
-          {recentPosts.length === 0 && <p className="text-sm text-ink-400">No posts yet — be the first to share something.</p>}
-          {recentPosts.map((post) => (
-            <Link
-              key={post._id}
-              to={`/feed?post=${post._id}`}
-              className="card p-4 block hover:border-brass-300 transition-colors"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <p className="text-sm font-medium text-ink-800">{post.author.name}</p>
-                <RoleBadge role={post.author.role} />
-              </div>
-              <p className="text-sm text-ink-600 line-clamp-2">{post.content}</p>
+        {user.role === 'student' && (
+          <div className="rounded-sm p-6 flex items-center justify-between flex-wrap gap-4
+            bg-ink-900/90 backdrop-blur-md border border-white/10 text-paper shadow-seal">
+            <div>
+              <h2 className="font-display text-xl mb-1 text-white">Looking for a mentor?</h2>
+              <p className="text-ink-300 text-sm">Browse verified alumni open to mentorship and send a connection request.</p>
+            </div>
+            <Link to="/directory?role=alumni" className="btn-brass shrink-0">
+              Browse mentors <ArrowRight size={16} />
             </Link>
-          ))}
+          </div>
+        )}
+
+        {user.role === 'alumni' && (
+          <div className="rounded-sm p-6 flex items-center justify-between flex-wrap gap-4
+            bg-ink-900/90 backdrop-blur-md border border-white/10 text-paper shadow-seal">
+            <div>
+              <h2 className="font-display text-xl mb-1 text-white">Have an opening at your company?</h2>
+              <p className="text-ink-300 text-sm">Post it directly to students of your own institution.</p>
+            </div>
+            <Link to="/jobs" className="btn-brass shrink-0">
+              Post an opportunity <ArrowRight size={16} />
+            </Link>
+          </div>
+        )}
+
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-display text-ink-900">Recent from the Knowledge Feed</h2>
+            <Link to="/feed" className="text-sm text-brass-600 hover:underline">View all</Link>
+          </div>
+          <div className="space-y-3">
+            {recentPosts.length === 0 && <p className="text-sm text-ink-400">No posts yet — be the first to share something.</p>}
+            {recentPosts.map((post) => (
+              <Link
+                key={post._id}
+                to={`/feed?post=${post._id}`}
+                className="rounded-sm p-4 block transition-colors border
+                  bg-white/60 border-white/60 backdrop-blur-md hover:border-brass-300 shadow-seal
+                  dark:bg-white/5 dark:border-white/10 dark:hover:border-brass-400/40"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="text-sm font-medium text-ink-800">{post.author.name}</p>
+                  <RoleBadge role={post.author.role} />
+                </div>
+                <p className="text-sm text-ink-600 line-clamp-2">{post.content}</p>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>
