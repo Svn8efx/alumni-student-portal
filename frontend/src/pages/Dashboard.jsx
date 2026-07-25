@@ -55,9 +55,6 @@ const Dashboard = () => {
 
   return (
     <div className="relative">
-      {/* Soft, static (non-animated) navy/brass gradient wash behind the page content —
-          gives the glass cards below something to catch light against, without the
-          performance cost of the animated aurora used on the pre-login pages. */}
       <div
         className="fixed inset-0 pointer-events-none -z-10"
         style={{
