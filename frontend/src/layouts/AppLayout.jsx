@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Rss, MessageSquare, MessagesSquare,
   Briefcase, CalendarDays, Handshake, LogOut, GraduationCap, ShieldCheck, Sun, Moon,
@@ -32,15 +32,18 @@ const AppLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-paper dark:bg-ink-900 flex">
       <aside className="hidden md:flex md:flex-col w-64 shrink-0 bg-ink-900 text-paper/90">
-        <div className="h-16 shrink-0 px-5 border-b border-white/10 flex items-center gap-2.5">
-  <GraduationCap size={24} className="text-brass-400 shrink-0" />
-  <div className="min-w-0">
-    <p className="font-display text-lg leading-tight text-white">The Ledger</p>
-    <p className="text-[10px] uppercase tracking-[0.16em] text-ink-300 whitespace-nowrap">
-      Alumni · Student Portal
-    </p>
-  </div>
-</div>
+        <Link
+          to="/dashboard"
+          className="h-16 shrink-0 px-5 border-b border-white/10 flex items-center gap-2.5 hover:bg-white/5 transition-colors"
+        >
+          <GraduationCap size={24} className="text-brass-400 shrink-0" />
+          <div className="min-w-0">
+            <p className="font-display text-lg leading-tight text-white">The Ledger</p>
+            <p className="text-[10px] uppercase tracking-[0.16em] text-ink-300 whitespace-nowrap">
+              Alumni · Student Portal
+            </p>
+          </div>
+        </Link>
 
         <nav className="flex-1 px-3 py-4 space-y-1">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
@@ -107,9 +110,12 @@ const AppLayout = ({ children }) => {
           }}
         />
         <header className="h-16 shrink-0 bg-white dark:bg-ink-800 border-b border-ink-100 dark:border-ink-700 flex items-center justify-between px-4 md:px-8">
-          <p className="md:hidden font-display text-lg text-ink-900 dark:text-paper flex items-center gap-1.5">
+          <Link
+            to="/dashboard"
+            className="md:hidden font-display text-lg text-ink-900 dark:text-paper flex items-center gap-1.5"
+          >
             <GraduationCap size={20} className="text-brass-500" /> The Ledger
-          </p>
+          </Link>
           <div className="hidden md:block" />
           <div className="flex items-center gap-3 sm:gap-4">
             <button
