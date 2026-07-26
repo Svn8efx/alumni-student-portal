@@ -2,17 +2,18 @@
 
 A production-quality, full-stack web platform bridging alumni and current students through
 mentorship, structured networking, job/internship postings, event hosting, a knowledge feed,
-a discussion forum, direct messaging, and real-time notifications.
+a discussion forum, real-time direct messaging, and live notifications.
 
 Built for the **Alumni-Student Interaction Portal** project proposal (K.R Mangalam University,
 Department of CSE) — implementing every objective and feature listed in that report, then
-taken further with a live deployment, dark mode, and full content moderation.
+taken considerably further: a live deployment, a polished dark theme, authenticated real-time
+messaging with WhatsApp-style deletes, full content moderation, and a hardened Socket.io layer.
 
 ---
 
 ## 🔴 Live Demo
 
-- **Frontend:** [alumni-student-portal.vercel.app](https://alumni-student-portal.vercel.app) 
+- **Frontend:** [alumni-student-portal.vercel.app](https://alumni-student-portal.vercel.app)
 - **Backend API:** [alumni-student-portal.onrender.com](https://alumni-student-portal.onrender.com)
 - **Repository:** this repo, deployed automatically on every push to `main`
 
@@ -22,31 +23,96 @@ taken further with a live deployment, dark mode, and full content moderation.
 
 ---
 
-## ✨ What's New
+## ✨ Feature Enhancements
 
-Beyond the original project proposal, the following were added after the initial build:
+Beyond the original project proposal, the platform has gone through several rounds of polish.
+Highlights, grouped by area:
 
-- **Dark mode** — a full navy/brass dark theme, toggleable from the sidebar or mobile header,
-  persisted per-user via `localStorage`, respecting system preference on first visit.
-- **Content moderation for admins** — admins (and content owners) can now delete posts,
-  comments, forum threads, and forum replies directly from the UI, not just user accounts.
-- **Real connection status in the Directory** — profile cards now show *Connect*, *Request
-  sent*, *Respond in Connections*, or *Connected* (with a one-click message shortcut) based on
-  your actual relationship with that person, instead of always showing a generic "Connect"
-  button.
-- **Clickable dashboard feed previews** — clicking a post preview on the Dashboard jumps
-  straight to that post on the Knowledge Feed page, auto-scrolled into view with its comment
-  thread already open.
-- **"Read more" expand/collapse** — long job and event descriptions no longer cut off silently;
-  they expand in place.
-- **Event host visibility** — event cards now show who's hosting each event, pulled from data
-  the backend already had but the UI never displayed.
-- **Forum reply counts fixed** — thread listings now show accurate reply counts via an
-  aggregation query, instead of always reading 0.
-- **Skills field opened up to students** — previously alumni-only in the profile editor, even
-  though the database always supported it for any role.
-- **New Message picker** — the Messages page now has a way to start a conversation with any
-  accepted connection directly, instead of only continuing existing threads.
+### Visual & Experience
+- **Signature dark theme (now the only theme)** — the navy/brass "ledger" look proved so much
+  stronger than the light variant that the app is now dark-only: `class="dark"` is set on
+  `<html>` itself, so pages paint dark from the very first frame with no white flash.
+- **Animated aurora hero** — an open-source WebGL aurora effect (`SoftAurora`, built on the
+  `ogl` library) tinted to the navy/gold palette, running behind the Landing, Login, and
+  Register pages.
+- **Redesigned Login & Register** — from plain centered forms into rich two-column layouts
+  (headline + stats on one side, form on the other), matching the Landing page's structure.
+- **Glassmorphism cards site-wide** — the shared `.card` class uses a frosted-glass treatment
+  (translucent fill + backdrop blur), applied automatically on every page.
+- **Softened corners app-wide** — cards on `rounded-lg`, buttons and inputs on `rounded-md`,
+  all changed once in the design tokens.
+- **Toast notifications & styled confirm dialogs** — custom `ToastContext` and
+  `ConfirmContext` replace native browser alerts/confirms everywhere (deletes, saves, errors).
+- **Brass loading spinner** — a shared SVG `Spinner` component with per-page labels
+  ("Loading feed…", "Loading directory…") on every data-driven page; dashboard stat cards
+  pulse "Loading…" instead of flashing fake zeros.
+- **App shell done right** — pinned (sticky) sidebar and topbar, clickable logo that returns
+  to the Dashboard, sign-out always one click away in the topbar, nav items that brighten on
+  hover, and a brass graduation-cap favicon.
+- **Metal role seals** — a translucent **gold** seal for alumni and a matching **platinum**
+  seal for students, used consistently across directory, feed, forum, messages, and
+  connections. Student directory cards also gained the same icon treatment as alumni cards
+  (branch and year lines).
+
+### Profile & Account
+- **Live directory-card preview** — the Profile page renders an exact replica of your
+  Directory card that updates as you type, sticky beside the edit form on desktop.
+- **Change password** — a dedicated card on the Profile page; requires the current password,
+  confirms the new one twice, and re-hashes via the existing bcrypt pre-save hook.
+
+### Messaging
+- **WhatsApp-style chat bubbles** — asymmetric bubble tails, inline timestamps, brass
+  own-messages vs. grey incoming, a pill-shaped input, and a circular send button.
+- **Delete for everyone** — senders can delete their own messages; the message becomes an
+  italic *"This message was deleted"* tombstone for **both** parties in real time over the
+  socket, and its content is genuinely wiped from the database.
+- **Role badges in messaging** — inbox rows and the conversation header show who you're
+  talking to, and the inbox preview handles deleted last-messages gracefully.
+- **Full-width layouts** — Feed, Messages, and Conversation use the full content width like
+  the Forum, instead of a cramped left-pinned column.
+
+### Connections
+- **Cancel pending requests** — a `DELETE /connections/:id` endpoint plus cancel buttons in
+  both the Directory card ("Request sent ✕") and the Connections page's Sent Requests tab.
+- **Reordered Connections tabs** — My Connections first and shown by default, then Incoming,
+  then Sent.
+
+### Real-time
+- **Job & event notifications** — posting a job notifies every active student live; hosting
+  an event notifies all active users. The bell lights up in real time with no refresh.
+
+---
+
+## 🔧 Bug Fixes & Hardening
+
+Real bugs found, diagnosed, and fixed along the way:
+
+- **Socket rooms were unauthenticated** *(security)* — any client could emit `join` with an
+  arbitrary user id and silently receive that user's private notifications and messages.
+  Socket.io now verifies the JWT in the connection handshake and joins each socket to the
+  room of its *verified* user; the client-claimed `join` event was removed entirely.
+- **Register/login returned a stripped-down profile** — only a handful of fields came back,
+  so freshly registered users saw an empty Profile page (and empty directory preview) until
+  a hard refresh re-fetched `/auth/me`. Both endpoints now return the full sanitized profile.
+- **Rejected connections were a dead end** — after a rejection, the pair could never connect
+  again: the Directory still showed a "Connect" button that always failed. Rejected requests
+  can now be re-sent in either direction, reusing the same document to respect the unique
+  `(requester, receiver)` index.
+- **Job/event notification types existed but never fired** — the `new_job`/`new_event` enum
+  values were defined in the Notification schema but no controller ever sent them.
+- **Deleting a message tripped schema validation** — wiping a deleted message's content
+  collided with `content: required`; it is now conditionally required (`!isDeleted`), so
+  tombstones remain valid documents.
+- **Empty numeric fields broke profile saves** — submitting an unselected year sent `''`
+  into a Mongoose `Number` cast; empty `currentYear`/`graduationYear` are now stripped
+  from the payload.
+- **False "No posts yet" flash** — the Dashboard had no loading state, so the empty-feed
+  message (and zeroed stat cards) appeared before data arrived.
+- **Native widgets ignored the theme** — dropdown option lists rendered white-on-white
+  (unreadable) and number inputs showed clunky spinner arrows; both are now styled directly
+  in `index.css`.
+- **Sidebar and topbar scrolled away** — the app shell now pins both, so navigation, the
+  notification bell, and sign-out are always visible.
 
 ---
 
@@ -58,7 +124,8 @@ Beyond the original project proposal, the following were added after the initial
 | Backend        | Node.js + Express.js                         |
 | Database       | MongoDB (Atlas) + Mongoose ODM                |
 | Auth           | JWT + bcrypt (role-based: student/alumni/admin) |
-| Real-time      | Socket.io (notifications & live messaging)    |
+| Real-time      | Socket.io (JWT-authenticated notifications & live messaging) |
+| Visual effects | `ogl` (WebGL aurora on public pages)          |
 | Frontend host  | Vercel                                        |
 | Backend host   | Render                                        |
 
@@ -88,9 +155,13 @@ Beyond the original project proposal, the following were added after the initial
 **Request flow:** the SPA attaches a JWT (issued at login/register) to every API call via an
 Axios interceptor. Express middleware (`protect`) verifies the token and loads the user;
 `authorize(...roles)` gates role-restricted routes (e.g. only `alumni`/`admin` can post jobs).
-Socket.io runs alongside the HTTP server; each authenticated client joins a room named after
-its own user ID, so the server can push notifications and messages to exactly one user without
-a broadcast.
+
+**Real-time flow:** Socket.io runs alongside the HTTP server. The client sends its JWT in the
+socket handshake; a server-side middleware verifies it and joins the socket to a room named
+after the *verified* user's id. The server can then push `notification`, `new_message`, and
+`message_deleted` events to exactly one user — and no client can subscribe to another user's
+room, because room membership is derived from the signed token rather than anything the
+client claims.
 
 ---
 
@@ -105,21 +176,25 @@ alumni-portal/
 │   ├── controllers/                 # business logic per resource
 │   ├── routes/                      # Express routers per resource
 │   ├── utils/                       # generateToken.js, notify.js, seed.js
-│   ├── server.js                    # app entry point (Express + Socket.io)
+│   ├── server.js                    # app entry point (Express + JWT-authenticated Socket.io)
 │   ├── package.json
 │   └── .env.example
 │
 └── frontend/
+    ├── public/favicon.svg           # brass graduation-cap tab icon
     ├── src/
     │   ├── api/axios.js             # configured Axios instance + interceptors
     │   ├── context/AuthContext.jsx  # auth state, login/register/logout, socket
-    │   ├── hooks/useDarkMode.js     # dark mode state + localStorage persistence
-    │   ├── layouts/AppLayout.jsx    # sidebar + topbar shell for authenticated pages
-    │   ├── components/              # ProtectedRoute, NotificationBell, RoleBadge
+    │   ├── context/ToastContext.jsx # toast notification system
+    │   ├── context/ConfirmContext.jsx # styled confirm dialogs
+    │   ├── hooks/useDarkMode.js     # enforces the permanent dark theme
+    │   ├── layouts/AppLayout.jsx    # pinned sidebar + sticky topbar shell
+    │   ├── components/              # ProtectedRoute, NotificationBell, RoleBadge,
+    │   │                            # Spinner, SoftAurora (WebGL aurora)
     │   ├── pages/                   # one file per route (Dashboard, Directory, Feed, ...)
     │   ├── App.jsx                  # route table
     │   ├── main.jsx                 # React root
-    │   └── index.css                # Tailwind directives + design tokens + dark mode rules
+    │   └── index.css                # Tailwind directives + design tokens + native widget fixes
     ├── tailwind.config.js
     ├── vite.config.js
     ├── vercel.json                  # SPA rewrite so client routes survive a page refresh
@@ -153,10 +228,15 @@ via aggregation rather than the full replies array, keeping the list endpoint li
 Threads and individual replies can be deleted by their owner or an admin.
 
 ### `Connection` (Mentorship requests)
-requester, receiver, status (`pending`/`accepted`/`rejected`), message. Unique index on `(requester, receiver)` prevents duplicate requests.
+requester, receiver, status (`pending`/`accepted`/`rejected`), message. A unique index on
+`(requester, receiver)` prevents duplicates; a rejected request can be re-sent (the same
+document is reset to `pending`, in either direction). Pending requests can be cancelled by
+their sender, which deletes the document.
 
 ### `Message`
-conversationId (sorted `userA_userB`), sender, receiver, content, isRead
+conversationId (sorted `userA_userB`), sender, receiver, content, isRead, **isDeleted**.
+Deleting a message (sender-only) wipes its content and flags it, leaving a tombstone that
+both parties see — content is conditionally required so tombstones remain valid documents.
 
 ### `Job`
 postedBy, title, company, type (`internship`/`full-time`/`part-time`/`freelance`), location, description, applyLink, skillsRequired[], deadline, isActive
@@ -165,7 +245,9 @@ postedBy, title, company, type (`internship`/`full-time`/`part-time`/`freelance`
 hostedBy, title, description, date, mode (`online`/`offline`/`hybrid`), location, registrations[User], capacity
 
 ### `Notification`
-recipient, type (`connection_request`/`connection_accepted`/`new_message`/`new_job`/`new_event`/`post_comment`/`post_like`/`forum_reply`/`system`), message, link, relatedId, isRead
+recipient, type (`connection_request`/`connection_accepted`/`new_message`/`new_job`/`new_event`/`post_comment`/`post_like`/`forum_reply`/`system`), message, link, relatedId, isRead.
+`new_job` fires to every active student when an opportunity is posted; `new_event` fires to
+all active users when an event is hosted.
 
 ---
 
@@ -176,17 +258,19 @@ Base URL: `/api`. All routes except `/auth/register` and `/auth/login` require
 
 | Method | Endpoint | Access | Description |
 |---|---|---|---|
-| POST | `/auth/register` | Public | Create a student/alumni account |
-| POST | `/auth/login` | Public | Authenticate, returns JWT |
+| POST | `/auth/register` | Public | Create a student/alumni account (returns the full profile + JWT) |
+| POST | `/auth/login` | Public | Authenticate (returns the full profile + JWT) |
 | GET | `/auth/me` | Private | Current user's profile |
 | GET | `/users?role=&branch=&graduationYear=&company=&skill=&search=&page=&limit=` | Private | Directory search/filter |
 | PUT | `/users/me` | Private | Update own profile |
+| PUT | `/users/me/password` | Private | Change own password (requires current password) |
 | GET | `/users/:id` | Private | View a public profile |
 | GET | `/users/admin/all` | Admin | List all accounts |
 | PATCH | `/users/admin/:id` | Admin | Activate/deactivate, change role, verify |
-| POST | `/connections` | Private | Send a connection/mentorship request |
+| POST | `/connections` | Private | Send a connection/mentorship request (re-sendable after rejection) |
 | GET | `/connections?status=` | Private | List my connections |
 | PATCH | `/connections/:id` | Private | Accept/reject a request |
+| DELETE | `/connections/:id` | Requester | Cancel a pending request you sent |
 | POST | `/posts` | Private | Create a feed post |
 | GET | `/posts?type=&page=&limit=` | Private | Paginated feed |
 | PATCH | `/posts/:id/like` | Private | Toggle like |
@@ -199,45 +283,50 @@ Base URL: `/api`. All routes except `/auth/register` and `/auth/login` require
 | POST | `/forum/:id/replies` | Private | Reply to a thread |
 | DELETE | `/forum/:id/replies/:replyId` | Owner/Admin | Delete a reply |
 | DELETE | `/forum/:id` | Owner/Admin | Delete a thread |
-| POST | `/jobs` | Alumni/Admin | Post a job/internship |
+| POST | `/jobs` | Alumni/Admin | Post a job/internship (notifies all active students) |
 | GET | `/jobs?type=&search=&page=&limit=` | Private | Browse postings |
 | PUT `/DELETE` | `/jobs/:id` | Owner/Admin | Edit/remove a posting |
-| POST | `/events` | Alumni/Admin | Host an event |
+| POST | `/events` | Alumni/Admin | Host an event (notifies all active users) |
 | GET | `/events?when=upcoming|past` | Private | List events |
 | PATCH | `/events/:id/register` | Private | Toggle registration |
 | PUT `/DELETE` | `/events/:id` | Owner/Admin | Edit/cancel an event |
 | POST | `/messages` | Private | Send a DM (requires accepted connection) |
+| DELETE | `/messages/:id` | Sender | Delete a message for everyone (tombstone) |
 | GET | `/messages` | Private | Inbox (conversation previews) |
 | GET | `/messages/:userId` | Private | Full conversation with a user |
 | GET | `/notifications` | Private | My notifications |
 | PATCH | `/notifications/:id/read` | Private | Mark one as read |
 | PATCH | `/notifications/read-all` | Private | Mark all as read |
 
-**Socket.io events:** client emits `join(userId)` on connect; server emits `notification` and
-`new_message` to that user's room.
+**Socket.io events:** the client connects with its JWT in the handshake (`auth: { token }`);
+the server verifies it and joins the socket to the verified user's private room. Server → client
+events: `notification`, `new_message`, and `message_deleted`.
 
 ---
 
 ## 6. Design System
 
-A deliberately academic "ledger/register" aesthetic rather than a generic SaaS look, with a
-full dark mode variant:
+A deliberately academic "ledger/register" aesthetic rather than a generic SaaS look — now a
+committed, dark-only theme:
 
-- **Colors (light):** deep ink-navy (`#131d30`) for chrome and headers, warm brass (`#cda23f`)
-  as the single accent (seals, CTAs, highlights), ivory paper background (`#f6f3ec`), moss
-  green for verified/success states.
-- **Colors (dark):** navy backgrounds invert to near-black (`#0c1220`), body text shifts to
-  the ivory paper tone, and brass becomes the primary interactive accent (buttons, active
-  states) instead of navy.
+- **Colors:** near-black navy (`#0c1220`) backgrounds, ivory paper text (`#f6f3ec`), and warm
+  brass (`#cda23f`) as the primary interactive accent (buttons, active states, highlights),
+  with moss green for verified/success states.
 - **Type:** Source Serif 4 for display headings (evokes a printed register/diploma), Inter for
   body and UI text, IBM Plex Mono for identifiers (roll numbers, timestamps).
-- **Signature element:** the `RoleBadge` "wax-seal" tag used everywhere a person appears
-  (directory, feed, forum, connections) — a small, consistent visual cue for who's alumni,
-  student, or admin.
-- **Dark mode implementation:** rather than hand-editing every page, `index.css` defines a set
-  of global overrides (`.dark .text-ink-700`, `.dark .bg-ink-50`, etc.) that automatically
-  rebalance the existing light-mode utility classes wherever they appear — verified with
-  scripted contrast-ratio checks (WCAG AA, 4.5:1) rather than visual inspection alone.
+- **Surfaces:** glassmorphism cards (translucent fill + backdrop blur + soft shadow) with
+  gently rounded corners; an ambient radial-gradient wash behind content; a WebGL aurora on
+  the public pages.
+- **Signature element:** the `RoleBadge` "wax-seal" tag used everywhere a person appears —
+  a **gold** seal for alumni and a **platinum** seal for students, a consistent visual cue
+  across directory, feed, forum, messages, and connections.
+- **Motion:** a shared brass SVG spinner for loading states, pulsing stat placeholders, nav
+  items that brighten on hover, and WhatsApp-style chat bubbles with live delete tombstones.
+- **Dark implementation:** `class="dark"` on `<html>` plus a set of global overrides in
+  `index.css` (`.dark .text-ink-700`, `.dark .bg-ink-50`, etc.) that rebalance the light-mode
+  utility classes wherever they appear — verified with scripted contrast-ratio checks
+  (WCAG AA, 4.5:1). Native widgets (dropdown option lists, number inputs) are styled directly
+  so they match the theme.
 
 ---
 
@@ -248,7 +337,7 @@ full dark mode variant:
 cd backend
 cp .env.example .env      # fill in MONGO_URI and JWT_SECRET
 npm install
-npm run seed               # optional: creates demo accounts (see below)
+npm run seed               # optional: creates sample accounts
 npm run dev                 # starts on http://localhost:5000
 ```
 
@@ -260,16 +349,17 @@ npm install
 npm run dev                 # starts on http://localhost:5173
 ```
 
-### Demo accounts (after `npm run seed`)
-All passwords: `Passw0rd!`
+### Demo accounts
+Password for both: `Passw0rd!`
 
 | Email | Role |
 |---|---|
-| admin@krmu.edu.in | admin |
-| priyanshu.alumni@krmu.edu.in | alumni |
-| aradhana.alumni@krmu.edu.in | alumni |
-| sarthak.student@krmu.edu.in | student |
-| anish.student@krmu.edu.in | student |
+| ram@krmu.edu.in | alumni |
+| sam@krmu.edu.in | student |
+
+An **admin** role also exists (full moderation console: verify/deactivate accounts, delete
+any content). Admin credentials are not published; they are provisioned privately via the
+seed script or by promoting an account directly in the database.
 
 ---
 
@@ -299,13 +389,14 @@ All passwords: `Passw0rd!`
 
 ## 9. Notes for the Faculty Demonstration
 
-- Role-based dashboards: log in as the seeded `student`, `alumni`, and `admin` accounts to
-  show the different views (mentorship CTA for students, "post opportunity" CTA for alumni,
-  the Admin Console for moderation).
-- Suggested live-demo path: Register a student → browse Directory → send a connection request
-  → log in as the alumnus → accept it → send a message → post a job → log in as the student →
-  view the job → check notifications throughout. Toggle dark mode at any point to show it
-  works consistently across every page.
+- Role-based dashboards: log in as the demo `student` and `alumni` accounts to show the
+  different views (mentorship CTA for students, "post opportunity" CTA for alumni); the
+  Admin Console can be shown separately with privately-held admin credentials.
+- Suggested live-demo path: register a student → browse the Directory → send a connection
+  request (and cancel/re-send it to show the full request lifecycle) → log in as the alumnus
+  → accept it → exchange messages (delete one to show the live "This message was deleted"
+  tombstone appear on both screens) → post a job and watch the student's notification bell
+  light up in real time → host an event and see everyone notified.
 - Admins can delete any post, comment, forum thread, or reply directly from the UI — useful to
   demonstrate the platform's content moderation story.
 - The codebase is intentionally documented with inline comments explaining *why*, not just
