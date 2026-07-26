@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Search, Briefcase, GraduationCap, Check, Clock, MessageCircle, X } from 'lucide-react';
+import { Search, Briefcase, GraduationCap, BookOpen, Check, Clock, MessageCircle, X } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -101,7 +101,7 @@ const Directory = () => {
               type="button"
               key={r || 'all'}
               onClick={() => { setRole(r); setSearchParams(r ? { role: r } : {}); }}
-              className={`px-4 py-2.5 rounded-sm text-sm font-medium border capitalize transition-colors ${
+              className={`px-4 py-2.5 rounded-md text-sm font-medium border capitalize transition-colors ${
                 role === r ? 'bg-ink-800 text-white border-ink-800' : 'border-ink-200 text-ink-600 hover:bg-ink-50'
               }`}
             >
@@ -139,8 +139,8 @@ const Directory = () => {
                   </div>
                 ) : (
                   <div className="text-sm text-ink-600 space-y-1 mb-3">
-                    {u.branch && <p>{u.branch}</p>}
-                    {u.currentYear && <p>Year {u.currentYear}</p>}
+                    {u.branch && <p className="flex items-center gap-1.5"><BookOpen size={13} /> {u.branch}</p>}
+                    {u.currentYear && <p className="flex items-center gap-1.5"><GraduationCap size={13} /> Year {u.currentYear}</p>}
                   </div>
                 )}
 
