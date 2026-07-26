@@ -50,6 +50,26 @@
   }
 }
 
+/* Native widget fixes (the app is dark-only):
+   1. <option> popups ignore utility classes and rendered white-on-white —
+      style them directly so dropdown lists are readable.
+   2. Remove the spinner arrows from number inputs (graduation year, capacity);
+      typing and arrow keys still work. */
+select option {
+  background-color: #131d30; /* ink-800 */
+  color: #f6f3ec;            /* paper */
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 /*
  * Global dark-mode text/background/border rebalancing.
  *
