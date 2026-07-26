@@ -70,21 +70,42 @@ const AppLayout = ({ children }) => {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 relative">
-        {/* Fixed to the viewport (not the page), so it always covers whatever's
-            visible no matter how long the page is or how far you've scrolled —
-            renders behind header/main naturally since it's the first child here,
-            and header/sidebar keep their own solid backgrounds painted on top. */}
-        <div
-          className="fixed inset-0 pointer-events-none"
-          style={{
-            background: `
-              radial-gradient(circle at 12% 8%, rgba(205,162,63,0.16), transparent 38%),
-              radial-gradient(circle at 90% 15%, rgba(91,113,159,0.14), transparent 42%),
-              radial-gradient(circle at 25% 85%, rgba(91,113,159,0.10), transparent 45%),
-              radial-gradient(circle at 75% 90%, rgba(205,162,63,0.10), transparent 42%)
-            `,
-          }}
-        />
+        {/* Ambient glow layer — four blurred color blobs, fixed to the viewport,
+            drifting and breathing very slowly. Animated with transform/opacity
+            only, so they're GPU-composited and cost nothing while scrolling.
+            Statically positioned exactly where the old radial-gradient washes
+            sat; the animations in index.css move them gently around "home". */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+          <div
+            className="glow-blob animate-glow-drift-1"
+            style={{
+              top: '-12%', left: '-6%', width: '44vw', height: '44vw',
+              background: 'radial-gradient(circle, rgba(205,162,63,0.20), transparent 65%)',
+            }}
+          />
+          <div
+            className="glow-blob animate-glow-drift-2"
+            style={{
+              top: '-8%', right: '-8%', width: '46vw', height: '46vw',
+              background: 'radial-gradient(circle, rgba(91,113,159,0.18), transparent 65%)',
+            }}
+          />
+          <div
+            className="glow-blob animate-glow-breathe-1"
+            style={{
+              bottom: '-14%', left: '10%', width: '40vw', height: '40vw',
+              background: 'radial-gradient(circle, rgba(91,113,159,0.13), transparent 65%)',
+            }}
+          />
+          <div
+            className="glow-blob animate-glow-breathe-2"
+            style={{
+              bottom: '-12%', right: '8%', width: '42vw', height: '42vw',
+              background: 'radial-gradient(circle, rgba(205,162,63,0.13), transparent 65%)',
+            }}
+          />
+        </div>
+
         <header className="h-16 shrink-0 bg-white dark:bg-ink-800 border-b border-ink-100 dark:border-ink-700 flex items-center justify-between px-4 md:px-8 sticky top-0 z-30">
           <Link
             to="/dashboard"
