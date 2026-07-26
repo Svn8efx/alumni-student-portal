@@ -1,10 +1,9 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Rss, MessageSquare, MessagesSquare,
-  Briefcase, CalendarDays, Handshake, LogOut, GraduationCap, ShieldCheck, Sun, Moon,
+  Briefcase, CalendarDays, Handshake, LogOut, GraduationCap, ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useDarkMode } from '../hooks/useDarkMode';
 import NotificationBell from '../components/NotificationBell';
 import RoleBadge from '../components/RoleBadge';
 
@@ -31,7 +30,6 @@ const navItemClass = ({ isActive }) =>
 
 const AppLayout = ({ children }) => {
   const { user, logout } = useAuth();
-  const { isDark, toggle } = useDarkMode();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -96,13 +94,6 @@ const AppLayout = ({ children }) => {
           </Link>
           <div className="hidden md:block" />
           <div className="flex items-center gap-3 sm:gap-4">
-            <button
-              onClick={toggle}
-              aria-label="Toggle dark mode"
-              className="p-2 rounded-full hover:bg-ink-50 dark:hover:bg-ink-700 transition-colors text-ink-500 dark:text-ink-300"
-            >
-              {isDark ? <Sun size={19} /> : <Moon size={19} />}
-            </button>
             <NotificationBell />
             <button onClick={() => navigate('/profile')} className="flex items-center gap-2 group">
               <div className="w-9 h-9 rounded-full bg-ink-100 dark:bg-ink-700 grid place-items-center text-ink-600 dark:text-ink-200 font-semibold overflow-hidden">

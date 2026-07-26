@@ -1,24 +1,13 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect } from 'react';
 
+// The Ledger is dark-mode only. This hook simply ensures the `dark` class is
+// always present on <html>, and clears any old 'theme' preference users may
+// have saved back when light mode existed (so nothing ever flips it off).
 export const useDarkMode = () => {
-  const [isDark, setIsDark] = useState(() => {
-    const stored = localStorage.getItem('theme');
-    if (stored) return stored === 'dark';
-    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
-  });
-
   useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) {
-      root.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      root.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDark]);
+    document.documentElement.classList.add('dark');
+    localStorage.removeItem('theme');
+  }, []);
 
-  const toggle = useCallback(() => setIsDark((d) => !d), []);
-
-  return { isDark, toggle };
+  return { isDark: true, toggle: () => {} };
 };
