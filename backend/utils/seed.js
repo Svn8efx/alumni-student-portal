@@ -2,7 +2,7 @@
  * Populates the database with demo accounts for faculty demonstration.
  * Run with: npm run seed
  *
- * Creates one admin, two alumni, and two students, all with password: Passw0rd!
+ * Creates one admin, three alumni, and three students, all with password: Passw0rd!
  */
 require('dotenv').config();
 const mongoose = require('mongoose');
@@ -46,6 +46,17 @@ const seedUsers = [
     isVerified: true,
   },
   {
+    name: 'Ram',
+    email: 'ram@krmu.edu.in',
+    password: 'Passw0rd!',
+    role: 'alumni',
+    branch: 'Computer Science',
+    graduationYear: 2029,
+    isMentorAvailable: true,
+    bio: 'Recent graduate, open to guiding juniors.',
+    isVerified: true,
+  },
+  {
     name: 'Sarthak Gupta',
     email: 'sarthak.student@krmu.edu.in',
     password: 'Passw0rd!',
@@ -64,6 +75,15 @@ const seedUsers = [
     currentYear: 3,
     rollNumber: '2501010273',
     bio: 'Aspiring backend developer, actively seeking mentorship.',
+  },
+  {
+    name: 'Sam',
+    email: 'sam@krmu.edu.in',
+    password: 'Passw0rd!',
+    role: 'student',
+    branch: 'Computer Science',
+    currentYear: 4,
+    bio: 'Final-year computer science student.',
   },
 ];
 

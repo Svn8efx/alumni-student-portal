@@ -24,6 +24,34 @@ const updateMyProfile = asyncHandler(async (req, res) => {
   res.json({ success: true, data: user });
 });
 
+// @desc    Change own password (requires current password)
+// @route   PUT /api/users/me/password
+// @access  Private
+const changeMyPassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    res.status(400);
+    throw new Error('Current and new password are both required');
+  }
+  if (newPassword.length < 6) {
+    res.status(400);
+    throw new Error('New password must be at least 6 characters');
+  }
+
+  const user = await User.findById(req.user._id).select('+password');
+  const matches = await user.matchPassword(currentPassword);
+  if (!matches) {
+    res.status(401);
+    throw new Error('Current password is incorrect');
+  }
+
+  user.password = newPassword; // pre-save hook re-hashes it
+  await user.save();
+
+  res.json({ success: true, message: 'Password updated' });
+});
+
 // @desc    Get single public profile by id
 // @route   GET /api/users/:id
 // @access  Private
@@ -90,4 +118,4 @@ const adminUpdateUser = asyncHandler(async (req, res) => {
   res.json({ success: true, data: user });
 });
 
-module.exports = { updateMyProfile, getUserById, getDirectory, adminGetAllUsers, adminUpdateUser };
+module.exports = { updateMyProfile, changeMyPassword, getUserById, getDirectory, adminGetAllUsers, adminUpdateUser };

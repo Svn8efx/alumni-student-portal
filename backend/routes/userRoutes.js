@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   updateMyProfile,
+  changeMyPassword,
   getUserById,
   getDirectory,
   adminGetAllUsers,
@@ -13,6 +14,7 @@ router.use(protect); // every route below requires authentication
 
 router.get('/', getDirectory);
 router.put('/me', updateMyProfile);
+router.put('/me/password', changeMyPassword);
 router.get('/admin/all', authorize('admin'), adminGetAllUsers);
 router.patch('/admin/:id', authorize('admin'), adminUpdateUser);
 router.get('/:id', getUserById);
