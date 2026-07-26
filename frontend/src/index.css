@@ -37,7 +37,7 @@
     @apply inline-flex items-center justify-center gap-2 rounded-sm bg-brass-500 text-ink-900 px-4 py-2.5 text-sm font-semibold hover:bg-brass-400 transition-colors disabled:opacity-50;
   }
   .card {
-    @apply bg-white border border-ink-100 rounded-sm shadow-seal dark:bg-ink-800 dark:border-ink-700;
+    @apply bg-white/60 backdrop-blur-lg border border-white/60 rounded-sm shadow-seal dark:bg-white/5 dark:border-white/10;
   }
   .input {
     @apply w-full rounded-sm border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-800 placeholder:text-ink-300 focus:border-brass-400 transition-colors dark:bg-ink-900 dark:border-ink-600 dark:text-paper dark:placeholder:text-ink-500;

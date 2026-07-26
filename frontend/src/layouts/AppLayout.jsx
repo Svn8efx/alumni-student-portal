@@ -88,7 +88,22 @@ const AppLayout = ({ children }) => {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 relative">
+        {/* Fixed to the viewport (not the page), so it always covers whatever's
+            visible no matter how long the page is or how far you've scrolled —
+            renders behind header/main naturally since it's the first child here,
+            and header/sidebar keep their own solid backgrounds painted on top. */}
+        <div
+          className="fixed inset-0 pointer-events-none"
+          style={{
+            background: `
+              radial-gradient(circle at 12% 8%, rgba(205,162,63,0.16), transparent 38%),
+              radial-gradient(circle at 90% 15%, rgba(91,113,159,0.14), transparent 42%),
+              radial-gradient(circle at 25% 85%, rgba(91,113,159,0.10), transparent 45%),
+              radial-gradient(circle at 75% 90%, rgba(205,162,63,0.10), transparent 42%)
+            `,
+          }}
+        />
         <header className="h-16 shrink-0 bg-white dark:bg-ink-800 border-b border-ink-100 dark:border-ink-700 flex items-center justify-between px-4 md:px-8">
           <p className="md:hidden font-display text-lg text-ink-900 dark:text-paper flex items-center gap-1.5">
             <GraduationCap size={20} className="text-brass-500" /> The Ledger
