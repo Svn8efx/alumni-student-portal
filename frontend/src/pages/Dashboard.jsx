@@ -6,13 +6,17 @@ import { useAuth } from '../context/AuthContext';
 import RoleBadge from '../components/RoleBadge';
 import Spinner from '../components/Spinner';
 
-const StatCard = ({ icon: Icon, label, value, to }) => (
+const StatCard = ({ icon: Icon, label, value, loading, to }) => (
   <Link to={to} className="card p-5 flex items-center gap-4 hover:border-brass-300 transition-colors">
     <div className="w-11 h-11 rounded-full bg-ink-50 dark:bg-white/10 grid place-items-center shrink-0">
       <Icon size={20} className="text-ink-700 dark:text-brass-400" />
     </div>
     <div>
-      <p className="text-2xl font-display text-ink-900">{value}</p>
+      {loading ? (
+        <p className="text-sm text-ink-400 animate-pulse">Loading…</p>
+      ) : (
+        <p className="text-2xl font-display text-ink-900">{value}</p>
+      )}
       <p className="text-xs uppercase tracking-wide text-ink-500">{label}</p>
     </div>
   </Link>
@@ -66,10 +70,10 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={Handshake} label="Connections" value={loading ? '—' : stats.connections} to="/connections" />
-        <StatCard icon={Users} label="Pending Requests" value={loading ? '—' : stats.pending} to="/connections" />
-        <StatCard icon={Briefcase} label="Open Postings" value={loading ? '—' : stats.jobs} to="/jobs" />
-        <StatCard icon={CalendarDays} label="Upcoming Events" value={loading ? '—' : stats.events} to="/events" />
+        <StatCard icon={Handshake} label="Connections" value={stats.connections} loading={loading} to="/connections" />
+        <StatCard icon={Users} label="Pending Requests" value={stats.pending} loading={loading} to="/connections" />
+        <StatCard icon={Briefcase} label="Open Postings" value={stats.jobs} loading={loading} to="/jobs" />
+        <StatCard icon={CalendarDays} label="Upcoming Events" value={stats.events} loading={loading} to="/events" />
       </div>
 
       {user.role === 'student' && (
