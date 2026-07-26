@@ -32,13 +32,15 @@ const AppLayout = ({ children }) => {
   return (
     <div className="min-h-screen bg-paper dark:bg-ink-900 flex">
       <aside className="hidden md:flex md:flex-col w-64 shrink-0 bg-ink-900 text-paper/90">
-        <div className="px-6 py-6 border-b border-white/10 flex items-center gap-2">
-          <GraduationCap size={26} className="text-brass-400" />
-          <div>
-            <p className="font-display text-lg leading-tight text-white">The Ledger</p>
-            <p className="text-[11px] uppercase tracking-widest text-ink-300">Alumni · Student Portal</p>
-          </div>
-        </div>
+        <div className="h-16 shrink-0 px-5 border-b border-white/10 flex items-center gap-2.5">
+  <GraduationCap size={24} className="text-brass-400 shrink-0" />
+  <div className="min-w-0">
+    <p className="font-display text-lg leading-tight text-white">The Ledger</p>
+    <p className="text-[10px] uppercase tracking-[0.16em] text-ink-300 whitespace-nowrap">
+      Alumni · Student Portal
+    </p>
+  </div>
+</div>
 
         <nav className="flex-1 px-3 py-4 space-y-1">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
