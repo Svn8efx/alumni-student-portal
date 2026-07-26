@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Search, Briefcase, GraduationCap, BookOpen, Check, Clock, MessageCircle, X } from 'lucide-react';
+import { Search, Briefcase, GraduationCap, BookOpen, Check, Clock, MessageCircle, X, Handshake } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import RoleBadge from '../components/RoleBadge';
 import Spinner from '../components/Spinner';
+
+// Inline LinkedIn glyph — lucide removed brand icons in newer versions,
+// so we ship our own tiny SVG instead of depending on a deprecated export.
+const LinkedInIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z" />
+  </svg>
+);
 
 const Directory = () => {
   const { user } = useAuth();
@@ -126,10 +134,20 @@ const Directory = () => {
                   <div className="w-11 h-11 rounded-full bg-ink-50 grid place-items-center font-semibold text-ink-700 overflow-hidden shrink-0">
                     {u.avatarUrl ? <img src={u.avatarUrl} alt={u.name} className="w-full h-full object-cover" /> : u.name.charAt(0)}
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="font-medium text-ink-800 truncate">{u.name}</p>
                     <RoleBadge role={u.role} />
                   </div>
+                  {u.linkedinUrl && (
+                    <button
+                      type="button"
+                      onClick={() => window.open(u.linkedinUrl, '_blank', 'noopener')}
+                      title={`${u.name} on LinkedIn`}
+                      className="p-1.5 text-ink-400 hover:text-brass-500 transition-colors shrink-0"
+                    >
+                      <LinkedInIcon size={16} />
+                    </button>
+                  )}
                 </div>
 
                 {u.role === 'alumni' ? (
@@ -142,6 +160,12 @@ const Directory = () => {
                     {u.branch && <p className="flex items-center gap-1.5"><BookOpen size={13} /> {u.branch}</p>}
                     {u.currentYear && <p className="flex items-center gap-1.5"><GraduationCap size={13} /> Year {u.currentYear}</p>}
                   </div>
+                )}
+
+                {u.role === 'alumni' && u.isMentorAvailable && (
+                  <span className="inline-flex items-center gap-1.5 self-start rounded-full border border-brass-400/40 bg-brass-400/10 px-2.5 py-1 text-[11px] font-semibold text-brass-600 dark:text-brass-300 mb-3">
+                    <Handshake size={12} /> Open to mentor
+                  </span>
                 )}
 
                 {u.bio && <p className="text-xs text-ink-500 line-clamp-2 mb-4">{u.bio}</p>}
