@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useConfirm } from '../context/ConfirmContext';
+import RoleBadge from '../components/RoleBadge';
 
 const Conversation = () => {
   const { userId } = useParams();
@@ -91,7 +92,10 @@ const Conversation = () => {
         <div className="w-9 h-9 rounded-full bg-ink-50 grid place-items-center font-semibold text-ink-700">
           {(otherUser?.name || '?').charAt(0)}
         </div>
-        <p className="font-medium text-ink-800">{otherUser?.name || 'Loading…'}</p>
+        <div className="flex items-center gap-2">
+          <p className="font-medium text-ink-800">{otherUser?.name || 'Loading…'}</p>
+          {otherUser?.role && <RoleBadge role={otherUser.role} />}
+        </div>
       </div>
 
       {error && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2 mt-3">{error}</p>}

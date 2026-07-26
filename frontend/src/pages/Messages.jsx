@@ -64,7 +64,7 @@ const Messages = () => {
               <button
                 key={person._id}
                 onClick={() => navigate(`/messages/${person._id}`)}
-                className="w-full flex items-center gap-3 p-2 rounded-sm hover:bg-ink-50 transition-colors text-left"
+                className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-ink-50 transition-colors text-left"
               >
                 <div className="w-9 h-9 rounded-full bg-ink-50 grid place-items-center font-semibold text-ink-700 shrink-0">
                   {person.name.charAt(0)}
@@ -97,7 +97,10 @@ const Messages = () => {
                   {(person?.name || '?').charAt(0)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-ink-800 text-sm truncate">{person?.name || 'Unknown user'}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium text-ink-800 text-sm truncate">{person?.name || 'Unknown user'}</p>
+                    {person?.role && <RoleBadge role={person.role} />}
+                  </div>
                   <p className={`text-xs truncate ${conv.lastMessage.isDeleted ? 'text-ink-400 italic' : 'text-ink-500'}`}>
                     {conv.lastMessage.isDeleted ? 'This message was deleted' : conv.lastMessage.content}
                   </p>
