@@ -19,16 +19,30 @@ const sendConnectionRequest = asyncHandler(async (req, res) => {
       { requester: receiverId, receiver: req.user._id },
     ],
   });
-  if (existing) {
+
+  if (existing && existing.status !== 'rejected') {
     res.status(400);
     throw new Error(`A connection request already exists with status: ${existing.status}`);
   }
 
-  const connection = await Connection.create({
-    requester: req.user._id,
-    receiver: receiverId,
-    message,
-  });
+  let connection;
+  if (existing) {
+    // A previously rejected request can be re-sent. Reuse the same document
+    // (a unique index on requester+receiver prevents creating a second one)
+    // and point it in the current direction, in case the original receiver
+    // is the one re-initiating this time.
+    existing.requester = req.user._id;
+    existing.receiver = receiverId;
+    existing.status = 'pending';
+    existing.message = message;
+    connection = await existing.save();
+  } else {
+    connection = await Connection.create({
+      requester: req.user._id,
+      receiver: receiverId,
+      message,
+    });
+  }
 
   await notify(req, {
     recipient: receiverId,
