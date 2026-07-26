@@ -87,7 +87,7 @@ const AppLayout = ({ children }) => {
             `,
           }}
         />
-        <header className="h-16 shrink-0 bg-white dark:bg-ink-800 border-b border-ink-100 dark:border-ink-700 flex items-center justify-between px-4 md:px-8">
+        <header className="h-16 shrink-0 bg-white dark:bg-ink-800 border-b border-ink-100 dark:border-ink-700 flex items-center justify-between px-4 md:px-8 sticky top-0 z-30">
           <Link
             to="/dashboard"
             className="md:hidden font-display text-lg text-ink-900 dark:text-paper flex items-center gap-1.5"
