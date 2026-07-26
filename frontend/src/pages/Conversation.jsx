@@ -58,7 +58,7 @@ const Conversation = () => {
   };
 
   return (
-    <div className="max-w-2xl flex flex-col h-[calc(100vh-160px)]">
+    <div className="flex flex-col h-[calc(100vh-160px)]">
       <div className="flex items-center gap-3 pb-4 border-b border-ink-100">
         <Link to="/messages" className="p-2 hover:bg-ink-50 rounded-full"><ArrowLeft size={18} /></Link>
         <div className="w-9 h-9 rounded-full bg-ink-50 grid place-items-center font-semibold text-ink-700">

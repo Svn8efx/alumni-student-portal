@@ -177,7 +177,7 @@ const Feed = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl mb-1">Knowledge Feed</h1>
         <p className="text-ink-500 text-sm">Career journeys, advice, and updates shared across the network.</p>
