@@ -1,7 +1,8 @@
 const ROLE_STYLES = {
-  // "Platinum" — the cool-metal counterpart to the alumni brass seal.
+  // "Platinum" — the cool-metal counterpart to the alumni gold seal.
   student: 'bg-slate-200 text-slate-600 dark:bg-slate-300/15 dark:text-slate-200 border border-slate-300/60 dark:border-slate-300/25',
-  alumni: 'bg-brass-100 text-brass-700',
+  // "Gold" — translucent gold fill with bright brass text in dark mode.
+  alumni: 'bg-brass-100 text-brass-700 border border-brass-400/50 dark:bg-brass-400/15 dark:text-brass-300 dark:border-brass-400/30',
   admin: 'bg-moss-500/10 text-moss-600',
 };
 
