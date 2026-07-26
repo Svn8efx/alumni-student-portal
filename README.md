@@ -32,27 +32,38 @@ Highlights, grouped by area:
 - **Signature dark theme (now the only theme)** — the navy/brass "ledger" look proved so much
   stronger than the light variant that the app is now dark-only: `class="dark"` is set on
   `<html>` itself, so pages paint dark from the very first frame with no white flash.
-- **Animated aurora hero** — an open-source WebGL aurora effect (`SoftAurora`, built on the
-  `ogl` library) tinted to the navy/gold palette, running behind the Landing, Login, and
-  Register pages.
+- **Living ambient background** — four blurred brass/blue glow blobs drift and breathe very
+  slowly behind every page (GPU-composited transform/opacity animation, so scrolling stays
+  smooth; honors `prefers-reduced-motion`), alongside the WebGL aurora (`SoftAurora`, built
+  on the `ogl` library) on the Landing, Login, and Register pages.
+- **Unified app chrome** — the sidebar and topbar share one deep-navy frame with consistent
+  hairline borders, both pinned so navigation, the notification bell, and sign-out are always
+  visible. Nav items brighten on hover with a brass indicator bar that grows in and stays lit
+  on the active page. The clickable logo returns to the Dashboard, and a brass graduation-cap
+  favicon marks the tab.
 - **Redesigned Login & Register** — from plain centered forms into rich two-column layouts
   (headline + stats on one side, form on the other), matching the Landing page's structure.
 - **Glassmorphism cards site-wide** — the shared `.card` class uses a frosted-glass treatment
-  (translucent fill + backdrop blur), applied automatically on every page.
-- **Softened corners app-wide** — cards on `rounded-lg`, buttons and inputs on `rounded-md`,
-  all changed once in the design tokens.
+  (translucent fill + backdrop blur) with gently rounded corners, applied automatically on
+  every page.
 - **Toast notifications & styled confirm dialogs** — custom `ToastContext` and
   `ConfirmContext` replace native browser alerts/confirms everywhere (deletes, saves, errors).
-- **Brass loading spinner** — a shared SVG `Spinner` component with per-page labels
-  ("Loading feed…", "Loading directory…") on every data-driven page; dashboard stat cards
-  pulse "Loading…" instead of flashing fake zeros.
-- **App shell done right** — pinned (sticky) sidebar and topbar, clickable logo that returns
-  to the Dashboard, sign-out always one click away in the topbar, nav items that brighten on
-  hover, and a brass graduation-cap favicon.
+- **Brass loading spinner** — a shared SVG `Spinner` component with per-page labels on every
+  data-driven page (session, dashboard, feed, directory, connections, messages, conversation,
+  jobs, events, forum, thread, admin); dashboard stat cards pulse "Loading…" instead of
+  flashing fake zeros.
 - **Metal role seals** — a translucent **gold** seal for alumni and a matching **platinum**
   seal for students, used consistently across directory, feed, forum, messages, and
-  connections. Student directory cards also gained the same icon treatment as alumni cards
-  (branch and year lines).
+  connections. Student directory cards carry the same icon treatment as alumni cards.
+
+### Directory & Discovery
+- **Mentor availability badge** — alumni who opt in via their profile show a brass
+  "🤝 Open to mentor" pill on their directory card, so students can instantly spot who to
+  approach (the platform's core purpose, finally visible).
+- **LinkedIn on cards** — profiles with a LinkedIn URL get a click-through icon on their
+  directory card.
+- **Real connection status on every card** — Connect, Request sent (with one-click cancel),
+  Respond in Connections, or Connected (with a message shortcut).
 
 ### Profile & Account
 - **Live directory-card preview** — the Profile page renders an exact replica of your
@@ -73,7 +84,7 @@ Highlights, grouped by area:
 
 ### Connections
 - **Cancel pending requests** — a `DELETE /connections/:id` endpoint plus cancel buttons in
-  both the Directory card ("Request sent ✕") and the Connections page's Sent Requests tab.
+  both the Directory card and the Connections page's Sent Requests tab.
 - **Reordered Connections tabs** — My Connections first and shown by default, then Incoming,
   then Sent.
 
@@ -188,13 +199,13 @@ alumni-portal/
     │   ├── context/ToastContext.jsx # toast notification system
     │   ├── context/ConfirmContext.jsx # styled confirm dialogs
     │   ├── hooks/useDarkMode.js     # enforces the permanent dark theme
-    │   ├── layouts/AppLayout.jsx    # pinned sidebar + sticky topbar shell
+    │   ├── layouts/AppLayout.jsx    # pinned navy chrome: sidebar, topbar, ambient glows
     │   ├── components/              # ProtectedRoute, NotificationBell, RoleBadge,
     │   │                            # Spinner, SoftAurora (WebGL aurora)
     │   ├── pages/                   # one file per route (Dashboard, Directory, Feed, ...)
     │   ├── App.jsx                  # route table
     │   ├── main.jsx                 # React root
-    │   └── index.css                # Tailwind directives + design tokens + native widget fixes
+    │   └── index.css                # Tailwind directives + design tokens + animations
     ├── tailwind.config.js
     ├── vite.config.js
     ├── vercel.json                  # SPA rewrite so client routes survive a page refresh
@@ -314,19 +325,21 @@ committed, dark-only theme:
   with moss green for verified/success states.
 - **Type:** Source Serif 4 for display headings (evokes a printed register/diploma), Inter for
   body and UI text, IBM Plex Mono for identifiers (roll numbers, timestamps).
-- **Surfaces:** glassmorphism cards (translucent fill + backdrop blur + soft shadow) with
-  gently rounded corners; an ambient radial-gradient wash behind content; a WebGL aurora on
-  the public pages.
+- **Surfaces & atmosphere:** glassmorphism cards (translucent fill + backdrop blur + soft
+  shadow) with gently rounded corners; slow-drifting ambient glow blobs behind the content;
+  a WebGL aurora on the public pages; one continuous navy chrome frame (sidebar + topbar)
+  with hairline borders.
 - **Signature element:** the `RoleBadge` "wax-seal" tag used everywhere a person appears —
-  a **gold** seal for alumni and a **platinum** seal for students, a consistent visual cue
-  across directory, feed, forum, messages, and connections.
-- **Motion:** a shared brass SVG spinner for loading states, pulsing stat placeholders, nav
-  items that brighten on hover, and WhatsApp-style chat bubbles with live delete tombstones.
+  a **gold** seal for alumni and a **platinum** seal for students — plus the brass
+  "Open to mentor" pill on mentoring alumni's directory cards.
+- **Motion:** a shared brass SVG spinner for loading states, pulsing stat placeholders, a
+  brass indicator bar on sidebar nav (grows on hover, lit on the active page), and
+  WhatsApp-style chat bubbles with live delete tombstones. All ambient animation is
+  transform/opacity-only and honors `prefers-reduced-motion`.
 - **Dark implementation:** `class="dark"` on `<html>` plus a set of global overrides in
-  `index.css` (`.dark .text-ink-700`, `.dark .bg-ink-50`, etc.) that rebalance the light-mode
-  utility classes wherever they appear — verified with scripted contrast-ratio checks
-  (WCAG AA, 4.5:1). Native widgets (dropdown option lists, number inputs) are styled directly
-  so they match the theme.
+  `index.css` that rebalance the light-mode utility classes wherever they appear — verified
+  with scripted contrast-ratio checks (WCAG AA, 4.5:1). Native widgets (dropdown option
+  lists, number inputs) are styled directly so they match the theme.
 
 ---
 
@@ -337,7 +350,7 @@ committed, dark-only theme:
 cd backend
 cp .env.example .env      # fill in MONGO_URI and JWT_SECRET
 npm install
-npm run seed               # optional: creates sample accounts
+npm run seed               # optional: creates the sample accounts below
 npm run dev                 # starts on http://localhost:5000
 ```
 
@@ -349,7 +362,7 @@ npm install
 npm run dev                 # starts on http://localhost:5173
 ```
 
-### Demo accounts
+### Demo accounts (live site)
 Password for both: `Passw0rd!`
 
 | Email | Role |
@@ -357,9 +370,12 @@ Password for both: `Passw0rd!`
 | ram@krmu.edu.in | alumni |
 | sam@krmu.edu.in | student |
 
-An **admin** role also exists (full moderation console: verify/deactivate accounts, delete
-any content). Admin credentials are not published; they are provisioned privately via the
-seed script or by promoting an account directly in the database.
+### Admin access
+An **admin** role provides the full moderation console (verify/deactivate accounts, delete
+any post, comment, thread, or reply). On a **local** setup, `npm run seed` creates
+`admin@krmu.edu.in` with the default password above. On the **live deployment**, the admin
+account uses a private password that is not published — this README (and its git history)
+are public, and printed admin credentials would hand full destructive access to anyone.
 
 ---
 
@@ -391,12 +407,13 @@ seed script or by promoting an account directly in the database.
 
 - Role-based dashboards: log in as the demo `student` and `alumni` accounts to show the
   different views (mentorship CTA for students, "post opportunity" CTA for alumni); the
-  Admin Console can be shown separately with privately-held admin credentials.
-- Suggested live-demo path: register a student → browse the Directory → send a connection
-  request (and cancel/re-send it to show the full request lifecycle) → log in as the alumnus
-  → accept it → exchange messages (delete one to show the live "This message was deleted"
-  tombstone appear on both screens) → post a job and watch the student's notification bell
-  light up in real time → host an event and see everyone notified.
+  Admin Console is shown live with the privately-held admin credentials.
+- Suggested live-demo path: register a student → browse the Directory (note the mentor
+  badges and LinkedIn links) → send a connection request (cancel and re-send it to show the
+  full request lifecycle) → log in as the alumnus → accept it → exchange messages (delete
+  one to show the live "This message was deleted" tombstone appear on both screens) → post
+  a job and watch the student's notification bell light up in real time → host an event and
+  see everyone notified.
 - Admins can delete any post, comment, forum thread, or reply directly from the UI — useful to
   demonstrate the platform's content moderation story.
 - The codebase is intentionally documented with inline comments explaining *why*, not just
