@@ -19,6 +19,16 @@ const NAV_ITEMS = [
   { to: '/events', label: 'Events', icon: CalendarDays },
 ];
 
+// Shared classes for sidebar nav items: inactive items brighten and lift a
+// shade on hover (reads as "bolder" without the width-shift of real bold),
+// with a slightly stronger tint while being clicked.
+const navItemClass = ({ isActive }) =>
+  `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-all duration-150 ${
+    isActive
+      ? 'bg-white/10 text-white font-medium'
+      : 'text-ink-200 hover:bg-white/10 hover:text-white active:bg-white/15'
+  }`;
+
 const AppLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const { isDark, toggle } = useDarkMode();
@@ -47,28 +57,13 @@ const AppLayout = ({ children }) => {
 
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm transition-colors ${
-                  isActive ? 'bg-white/10 text-white font-medium' : 'text-ink-200 hover:bg-white/5 hover:text-white'
-                }`
-              }
-            >
+            <NavLink key={to} to={to} className={navItemClass}>
               <Icon size={18} />
               {label}
             </NavLink>
           ))}
           {user?.role === 'admin' && (
-            <NavLink
-              to="/admin"
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm transition-colors ${
-                  isActive ? 'bg-white/10 text-white font-medium' : 'text-ink-200 hover:bg-white/5 hover:text-white'
-                }`
-              }
-            >
+            <NavLink to="/admin" className={navItemClass}>
               <ShieldCheck size={18} />
               Admin Console
             </NavLink>
