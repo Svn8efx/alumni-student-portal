@@ -3,19 +3,21 @@ import { Link } from 'react-router-dom';
 import { Check, X, MessageCircle } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 import RoleBadge from '../components/RoleBadge';
 import Spinner from '../components/Spinner';
 
 const TABS = [
-  { key: 'incoming', label: 'Incoming Requests' },
   { key: 'accepted', label: 'My Connections' },
+  { key: 'incoming', label: 'Incoming Requests' },
   { key: 'sent', label: 'Sent Requests' },
 ];
 
 const Connections = () => {
   const { user } = useAuth();
+  const toast = useToast();
   const [connections, setConnections] = useState([]);
-  const [tab, setTab] = useState('incoming');
+  const [tab, setTab] = useState('accepted');
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
@@ -30,6 +32,16 @@ const Connections = () => {
   const respond = async (id, status) => {
     await api.patch(`/connections/${id}`, { status });
     load();
+  };
+
+  const cancelRequest = async (id) => {
+    try {
+      await api.delete(`/connections/${id}`);
+      setConnections((prev) => prev.filter((c) => c._id !== id));
+      toast.success('Request cancelled.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not cancel request');
+    }
   };
 
   const filtered = connections.filter((c) => {
@@ -94,7 +106,17 @@ const Connections = () => {
                     <MessageCircle size={14} /> Message
                   </Link>
                 )}
-                {tab === 'sent' && <span className="text-xs text-ink-400 shrink-0">Pending</span>}
+                {tab === 'sent' && (
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-xs text-ink-400">Pending</span>
+                    <button
+                      onClick={() => cancelRequest(c._id)}
+                      className="btn-secondary px-3 py-2 text-xs hover:text-red-600 hover:border-red-300"
+                    >
+                      <X size={14} /> Cancel
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
