@@ -1,5 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const Event = require('../models/Event');
+const User = require('../models/User');
+const notify = require('../utils/notify');
 
 // @desc    Create an event/webinar
 // @route   POST /api/events
@@ -7,6 +9,21 @@ const Event = require('../models/Event');
 const createEvent = asyncHandler(async (req, res) => {
   const event = await Event.create({ ...req.body, hostedBy: req.user._id });
   const populated = await event.populate('hostedBy', 'name company avatarUrl');
+
+  // Notify all active users except the host — events are open to everyone.
+  // (Fine at current scale; batch with insertMany if the user base grows large.)
+  const recipients = await User.find({ isActive: true, _id: { $ne: req.user._id } }).select('_id').lean();
+  const when = new Date(event.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  for (const r of recipients) {
+    await notify(req, {
+      recipient: r._id,
+      type: 'new_event',
+      message: `${req.user.name} is hosting "${event.title}" on ${when}`,
+      link: '/events',
+      relatedId: event._id,
+    });
+  }
+
   res.status(201).json({ success: true, data: populated });
 });
 

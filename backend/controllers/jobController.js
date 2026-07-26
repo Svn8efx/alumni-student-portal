@@ -1,5 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const Job = require('../models/Job');
+const User = require('../models/User');
+const notify = require('../utils/notify');
 
 // @desc    Post a job/internship (alumni or admin only)
 // @route   POST /api/jobs
@@ -7,6 +9,20 @@ const Job = require('../models/Job');
 const createJob = asyncHandler(async (req, res) => {
   const job = await Job.create({ ...req.body, postedBy: req.user._id });
   const populated = await job.populate('postedBy', 'name company avatarUrl');
+
+  // Notify every active student — job postings are aimed at them.
+  // (Fine at current scale; batch with insertMany if the user base grows large.)
+  const students = await User.find({ role: 'student', isActive: true }).select('_id').lean();
+  for (const s of students) {
+    await notify(req, {
+      recipient: s._id,
+      type: 'new_job',
+      message: `${req.user.name} posted a new ${job.type}: ${job.title} at ${job.company}`,
+      link: '/jobs',
+      relatedId: job._id,
+    });
+  }
+
   res.status(201).json({ success: true, data: populated });
 });
 
