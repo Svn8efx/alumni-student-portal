@@ -31,7 +31,7 @@ const AppLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-paper dark:bg-ink-900 flex">
-      <aside className="hidden md:flex md:flex-col w-64 shrink-0 bg-ink-900 text-paper/90">
+      <aside className="hidden md:flex md:flex-col w-64 shrink-0 bg-ink-900 text-paper/90 md:sticky md:top-0 md:h-screen">
         <Link
           to="/dashboard"
           className="h-16 shrink-0 px-5 border-b border-white/10 flex items-center gap-2.5 hover:bg-white/5 transition-colors"
@@ -45,7 +45,7 @@ const AppLayout = ({ children }) => {
           </div>
         </Link>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -74,23 +74,6 @@ const AppLayout = ({ children }) => {
             </NavLink>
           )}
         </nav>
-
-        <div className="px-3 py-4 border-t border-white/10 space-y-1">
-          <button
-            onClick={toggle}
-            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-sm text-sm text-ink-200 hover:bg-white/5 hover:text-white transition-colors"
-          >
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
-            {isDark ? 'Light mode' : 'Dark mode'}
-          </button>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-sm text-sm text-ink-200 hover:bg-white/5 hover:text-white transition-colors"
-          >
-            <LogOut size={18} />
-            Sign out
-          </button>
-        </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 relative">
@@ -142,7 +125,8 @@ const AppLayout = ({ children }) => {
             <button
               onClick={handleLogout}
               aria-label="Sign out"
-              className="md:hidden p-2 rounded-full hover:bg-ink-50 dark:hover:bg-ink-700 transition-colors text-ink-500 dark:text-ink-300"
+              title="Sign out"
+              className="p-2 rounded-full hover:bg-ink-50 dark:hover:bg-ink-700 transition-colors text-ink-500 dark:text-ink-300"
             >
               <LogOut size={20} />
             </button>
