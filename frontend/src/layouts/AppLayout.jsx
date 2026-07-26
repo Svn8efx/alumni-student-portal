@@ -39,7 +39,7 @@ const AppLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-paper dark:bg-ink-900 flex">
-      <aside className="hidden md:flex md:flex-col w-64 shrink-0 bg-ink-900 text-paper/90 md:sticky md:top-0 md:h-screen">
+      <aside className="hidden md:flex md:flex-col w-64 shrink-0 bg-ink-900 text-paper/90 md:sticky md:top-0 md:h-screen border-r border-white/10">
         <Link
           to="/dashboard"
           className="h-16 shrink-0 px-5 border-b border-white/10 flex items-center gap-2.5 hover:bg-white/5 transition-colors"
@@ -106,7 +106,7 @@ const AppLayout = ({ children }) => {
           />
         </div>
 
-        <header className="h-16 shrink-0 bg-white dark:bg-ink-800 border-b border-ink-100 dark:border-ink-700 flex items-center justify-between px-4 md:px-8 sticky top-0 z-30">
+        <header className="h-16 shrink-0 bg-white dark:bg-ink-900 border-b border-ink-100 dark:border-white/10 flex items-center justify-between px-4 md:px-8 sticky top-0 z-30">
           <Link
             to="/dashboard"
             className="md:hidden font-display text-lg text-ink-900 dark:text-paper flex items-center gap-1.5"
