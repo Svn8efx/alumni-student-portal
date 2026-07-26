@@ -18,14 +18,16 @@ const NAV_ITEMS = [
   { to: '/events', label: 'Events', icon: CalendarDays },
 ];
 
-// Shared classes for sidebar nav items: inactive items brighten and lift a
-// shade on hover (reads as "bolder" without the width-shift of real bold),
-// with a slightly stronger tint while being clicked.
+// Sidebar nav items: brighten on hover, plus a small brass bar on the left
+// edge (rendered via a ::before pseudo-element) that grows in on hover and
+// stays fully lit on the active page — a stronger "you are here" marker.
 const navItemClass = ({ isActive }) =>
-  `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-all duration-150 ${
+  `relative flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-all duration-150
+   before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[3px]
+   before:rounded-full before:bg-brass-400 before:transition-all before:duration-200 ${
     isActive
-      ? 'bg-white/10 text-white font-medium'
-      : 'text-ink-200 hover:bg-white/10 hover:text-white active:bg-white/15'
+      ? 'bg-white/10 text-white font-medium before:h-6 before:opacity-100'
+      : 'text-ink-200 hover:bg-white/10 hover:text-white active:bg-white/15 before:h-2 before:opacity-0 hover:before:h-6 hover:before:opacity-100'
   }`;
 
 const AppLayout = ({ children }) => {
