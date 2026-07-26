@@ -2,6 +2,16 @@ const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 
+// Return the full user document minus the password — the frontend stores this
+// as the logged-in user, so it must contain every profile field (branch,
+// company, currentYear, skills, ...) or pages like Profile render empty
+// until the next full reload re-fetches /auth/me.
+const sanitize = (user) => {
+  const obj = user.toObject();
+  delete obj.password;
+  return obj;
+};
+
 // @desc    Register a new user (student or alumni)
 // @route   POST /api/auth/register
 // @access  Public
@@ -37,10 +47,7 @@ const registerUser = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     data: {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
+      ...sanitize(user),
       token: generateToken(user._id, user.role),
     },
   });
@@ -69,11 +76,7 @@ const loginUser = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     data: {
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      avatarUrl: user.avatarUrl,
+      ...sanitize(user),
       token: generateToken(user._id, user.role),
     },
   });
