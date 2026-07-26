@@ -6,6 +6,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
+import Spinner from '../components/Spinner';
 
 const CATEGORIES = ['general', 'placements', 'academics', 'career-advice', 'projects'];
 
@@ -104,7 +105,7 @@ const Forum = () => {
       </div>
 
       {loading ? (
-        <p className="text-sm text-ink-400">Loading threads…</p>
+        <Spinner center label="Loading threads…" />
       ) : threads.length === 0 ? (
         <p className="text-sm text-ink-400">No threads yet in this category.</p>
       ) : (

@@ -5,6 +5,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
+import Spinner from '../components/Spinner';
 
 const emptyForm = { title: '', description: '', date: '', mode: 'online', location: '', capacity: 0 };
 
@@ -109,7 +110,7 @@ const Events = () => {
       </div>
 
       {loading ? (
-        <p className="text-sm text-ink-400">Loading events…</p>
+        <Spinner center label="Loading events…" />
       ) : events.length === 0 ? (
         <p className="text-sm text-ink-400">No {when} events.</p>
       ) : (

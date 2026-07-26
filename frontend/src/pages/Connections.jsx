@@ -4,6 +4,7 @@ import { Check, X, MessageCircle } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import RoleBadge from '../components/RoleBadge';
+import Spinner from '../components/Spinner';
 
 const TABS = [
   { key: 'incoming', label: 'Incoming Requests' },
@@ -62,7 +63,7 @@ const Connections = () => {
       </div>
 
       {loading ? (
-        <p className="text-sm text-ink-400">Loading…</p>
+        <Spinner center label="Loading connections…" />
       ) : filtered.length === 0 ? (
         <p className="text-sm text-ink-400">Nothing here yet.</p>
       ) : (

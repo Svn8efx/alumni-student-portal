@@ -5,6 +5,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
+import Spinner from '../components/Spinner';
 
 const JOB_TYPES = ['internship', 'full-time', 'part-time', 'freelance'];
 
@@ -103,7 +104,7 @@ const Jobs = () => {
       </div>
 
       {loading ? (
-        <p className="text-sm text-ink-400">Loading postings…</p>
+        <Spinner center label="Loading jobs…" />
       ) : jobs.length === 0 ? (
         <p className="text-sm text-ink-400">No postings match this filter yet.</p>
       ) : (

@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import RoleBadge from '../components/RoleBadge';
+import Spinner from '../components/Spinner';
 
 const POST_TYPES = ['general', 'experience', 'advice', 'announcement'];
 
@@ -199,7 +200,7 @@ const Feed = () => {
       </form>
 
       {loading ? (
-        <p className="text-sm text-ink-400">Loading feed…</p>
+        <Spinner center label="Loading feed…" />
       ) : posts.length === 0 ? (
         <p className="text-sm text-ink-400">No posts yet — be the first to share something.</p>
       ) : (

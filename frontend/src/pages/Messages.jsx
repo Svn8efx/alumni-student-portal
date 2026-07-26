@@ -5,6 +5,7 @@ import { MessageSquarePlus, X } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import RoleBadge from '../components/RoleBadge';
+import Spinner from '../components/Spinner';
 
 const Messages = () => {
   const { user } = useAuth();
@@ -79,7 +80,7 @@ const Messages = () => {
       )}
 
       {loading ? (
-        <p className="text-sm text-ink-400">Loading inbox…</p>
+        <Spinner center label="Loading messages…" />
       ) : inbox.length === 0 ? (
         <div className="card p-6 text-center">
           <p className="text-sm text-ink-500 mb-3">No conversations yet.</p>

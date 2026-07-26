@@ -4,6 +4,7 @@ import { Users, Briefcase, CalendarDays, Handshake, ArrowRight } from 'lucide-re
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import RoleBadge from '../components/RoleBadge';
+import Spinner from '../components/Spinner';
 
 const StatCard = ({ icon: Icon, label, value, to }) => (
   <Link to={to} className="card p-5 flex items-center gap-4 hover:border-brass-300 transition-colors">
@@ -21,23 +22,29 @@ const Dashboard = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState({ connections: 0, jobs: 0, events: 0, pending: 0 });
   const [recentPosts, setRecentPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const [connectionsRes, jobsRes, eventsRes, feedRes] = await Promise.all([
-        api.get('/connections?status=accepted'),
-        api.get('/jobs?limit=1'),
-        api.get('/events?when=upcoming&limit=1'),
-        api.get('/posts?limit=3'),
-      ]);
-      const pendingRes = await api.get('/connections?status=pending');
-      setStats({
-        connections: connectionsRes.data.data.length,
-        jobs: jobsRes.data.pagination.total,
-        events: eventsRes.data.pagination.total,
-        pending: pendingRes.data.data.filter((c) => c.receiver._id === user._id).length,
-      });
-      setRecentPosts(feedRes.data.data);
+      setLoading(true);
+      try {
+        const [connectionsRes, jobsRes, eventsRes, feedRes] = await Promise.all([
+          api.get('/connections?status=accepted'),
+          api.get('/jobs?limit=1'),
+          api.get('/events?when=upcoming&limit=1'),
+          api.get('/posts?limit=3'),
+        ]);
+        const pendingRes = await api.get('/connections?status=pending');
+        setStats({
+          connections: connectionsRes.data.data.length,
+          jobs: jobsRes.data.pagination.total,
+          events: eventsRes.data.pagination.total,
+          pending: pendingRes.data.data.filter((c) => c.receiver._id === user._id).length,
+        });
+        setRecentPosts(feedRes.data.data);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, [user._id]);
@@ -59,10 +66,10 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={Handshake} label="Connections" value={stats.connections} to="/connections" />
-        <StatCard icon={Users} label="Pending Requests" value={stats.pending} to="/connections" />
-        <StatCard icon={Briefcase} label="Open Postings" value={stats.jobs} to="/jobs" />
-        <StatCard icon={CalendarDays} label="Upcoming Events" value={stats.events} to="/events" />
+        <StatCard icon={Handshake} label="Connections" value={loading ? '—' : stats.connections} to="/connections" />
+        <StatCard icon={Users} label="Pending Requests" value={loading ? '—' : stats.pending} to="/connections" />
+        <StatCard icon={Briefcase} label="Open Postings" value={loading ? '—' : stats.jobs} to="/jobs" />
+        <StatCard icon={CalendarDays} label="Upcoming Events" value={loading ? '—' : stats.events} to="/events" />
       </div>
 
       {user.role === 'student' && (
@@ -95,16 +102,21 @@ const Dashboard = () => {
           <Link to="/feed" className="text-sm text-brass-600 hover:underline">View all</Link>
         </div>
         <div className="space-y-3">
-          {recentPosts.length === 0 && <p className="text-sm text-ink-400">No posts yet — be the first to share something.</p>}
-          {recentPosts.map((post) => (
-            <Link key={post._id} to={`/feed?post=${post._id}`} className="card p-4 block hover:border-brass-300 transition-colors">
-              <div className="flex items-center gap-2 mb-2">
-                <p className="text-sm font-medium text-ink-800">{post.author.name}</p>
-                <RoleBadge role={post.author.role} />
-              </div>
-              <p className="text-sm text-ink-600 line-clamp-2">{post.content}</p>
-            </Link>
-          ))}
+          {loading ? (
+            <Spinner center label="Loading feed…" />
+          ) : recentPosts.length === 0 ? (
+            <p className="text-sm text-ink-400">No posts yet — be the first to share something.</p>
+          ) : (
+            recentPosts.map((post) => (
+              <Link key={post._id} to={`/feed?post=${post._id}`} className="card p-4 block hover:border-brass-300 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="text-sm font-medium text-ink-800">{post.author.name}</p>
+                  <RoleBadge role={post.author.role} />
+                </div>
+                <p className="text-sm text-ink-600 line-clamp-2">{post.content}</p>
+              </Link>
+            ))
+          )}
         </div>
       </div>
     </div>

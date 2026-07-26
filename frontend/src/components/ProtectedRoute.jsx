@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Spinner from './Spinner';
 
 /**
  * Wraps a route so it requires authentication, and optionally restricts
@@ -10,11 +11,7 @@ const ProtectedRoute = ({ children, roles }) => {
   const location = useLocation();
 
   if (loading) {
-    return (
-      <div className="min-h-screen grid place-items-center bg-paper dark:bg-ink-900">
-        <p className="text-ink-400 text-sm tracking-wide">Loading your session…</p>
-      </div>
-    );
+    return <Spinner fullPage size="lg" label="Loading your session…" />;
   }
 
   if (!user) {

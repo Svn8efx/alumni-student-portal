@@ -5,6 +5,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import RoleBadge from '../components/RoleBadge';
+import Spinner from '../components/Spinner';
 
 const Directory = () => {
   const { user } = useAuth();
@@ -93,7 +94,7 @@ const Directory = () => {
       </form>
 
       {loading ? (
-        <p className="text-sm text-ink-400">Loading directory…</p>
+        <Spinner center label="Loading directory…" />
       ) : users.length === 0 ? (
         <p className="text-sm text-ink-400">No matching profiles found.</p>
       ) : (
