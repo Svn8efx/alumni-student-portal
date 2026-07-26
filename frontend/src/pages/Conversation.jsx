@@ -6,6 +6,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useConfirm } from '../context/ConfirmContext';
 import RoleBadge from '../components/RoleBadge';
+import Spinner from '../components/Spinner';
 
 const Conversation = () => {
   const { userId } = useParams();
@@ -15,9 +16,11 @@ const Conversation = () => {
   const [otherUser, setOtherUser] = useState(null);
   const [text, setText] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
   const bottomRef = useRef(null);
 
   const load = async () => {
+    setLoading(true);
     try {
       const [msgRes, userRes] = await Promise.all([
         api.get(`/messages/${userId}`),
@@ -27,6 +30,8 @@ const Conversation = () => {
       setOtherUser(userRes.data.data);
     } catch (err) {
       setError(err.response?.data?.message || 'Could not load conversation');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,7 +98,7 @@ const Conversation = () => {
           {(otherUser?.name || '?').charAt(0)}
         </div>
         <div className="flex items-center gap-2">
-          <p className="font-medium text-ink-800">{otherUser?.name || 'Loading…'}</p>
+          <p className="font-medium text-ink-800">{otherUser?.name || '…'}</p>
           {otherUser?.role && <RoleBadge role={otherUser.role} />}
         </div>
       </div>
@@ -101,39 +106,47 @@ const Conversation = () => {
       {error && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-md px-3 py-2 mt-3">{error}</p>}
 
       <div className="flex-1 overflow-y-auto py-4 space-y-1.5">
-        {messages.map((m) => {
-          const mine = m.sender === user._id;
-          return (
-            <div key={m._id} className={`flex items-center gap-2 group ${mine ? 'justify-end' : 'justify-start'}`}>
-              {mine && !m.isDeleted && (
-                <button
-                  onClick={() => handleDelete(m._id)}
-                  title="Delete message"
-                  className="p-1.5 text-ink-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  <Trash2 size={14} />
-                </button>
-              )}
-              <div className={`max-w-[70%] px-3.5 py-2 text-sm ${
-                m.isDeleted
-                  ? `rounded-2xl ${mine ? 'rounded-br-md' : 'rounded-bl-md'} bg-transparent border border-dashed border-ink-200 dark:border-ink-600 text-ink-400 italic`
-                  : mine
-                  ? 'rounded-2xl rounded-br-md bg-ink-800 text-white dark:bg-brass-500 dark:text-ink-900'
-                  : 'rounded-2xl rounded-bl-md bg-white dark:bg-ink-700 border border-ink-100 dark:border-ink-600 text-ink-700'
-              }`}>
-                <p className="break-words">
-                  {m.isDeleted ? 'This message was deleted' : m.content}
-                  <span className={`text-[10px] ml-2 align-bottom whitespace-nowrap ${
-                    m.isDeleted ? 'text-ink-300' : mine ? 'text-white/60 dark:text-ink-900/60' : 'text-ink-400'
+        {loading ? (
+          <div className="h-full grid place-items-center">
+            <Spinner label="Loading conversation…" />
+          </div>
+        ) : (
+          <>
+            {messages.map((m) => {
+              const mine = m.sender === user._id;
+              return (
+                <div key={m._id} className={`flex items-center gap-2 group ${mine ? 'justify-end' : 'justify-start'}`}>
+                  {mine && !m.isDeleted && (
+                    <button
+                      onClick={() => handleDelete(m._id)}
+                      title="Delete message"
+                      className="p-1.5 text-ink-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                  <div className={`max-w-[70%] px-3.5 py-2 text-sm ${
+                    m.isDeleted
+                      ? `rounded-2xl ${mine ? 'rounded-br-md' : 'rounded-bl-md'} bg-transparent border border-dashed border-ink-200 dark:border-ink-600 text-ink-400 italic`
+                      : mine
+                      ? 'rounded-2xl rounded-br-md bg-ink-800 text-white dark:bg-brass-500 dark:text-ink-900'
+                      : 'rounded-2xl rounded-bl-md bg-white dark:bg-ink-700 border border-ink-100 dark:border-ink-600 text-ink-700'
                   }`}>
-                    {format(new Date(m.createdAt), 'p')}
-                  </span>
-                </p>
-              </div>
-            </div>
-          );
-        })}
-        <div ref={bottomRef} />
+                    <p className="break-words">
+                      {m.isDeleted ? 'This message was deleted' : m.content}
+                      <span className={`text-[10px] ml-2 align-bottom whitespace-nowrap ${
+                        m.isDeleted ? 'text-ink-300' : mine ? 'text-white/60 dark:text-ink-900/60' : 'text-ink-400'
+                      }`}>
+                        {format(new Date(m.createdAt), 'p')}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+            <div ref={bottomRef} />
+          </>
+        )}
       </div>
 
       <form onSubmit={handleSend} className="flex gap-2 pt-3 border-t border-ink-100">

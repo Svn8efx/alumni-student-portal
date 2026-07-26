@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { useConfirm } from '../context/ConfirmContext';
 import RoleBadge from '../components/RoleBadge';
+import Spinner from '../components/Spinner';
 
 const ForumThreadPage = () => {
   const { id } = useParams();
@@ -52,7 +53,7 @@ const ForumThreadPage = () => {
     toast.success('Reply deleted.');
   };
 
-  if (!thread) return <p className="text-sm text-ink-400">Loading thread…</p>;
+  if (!thread) return <Spinner center label="Loading thread…" />;
 
   const canDeleteThread = thread.author._id === user._id || user.role === 'admin';
 

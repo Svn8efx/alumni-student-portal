@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ShieldCheck, ShieldOff, BadgeCheck } from 'lucide-react';
 import api from '../api/axios';
 import RoleBadge from '../components/RoleBadge';
+import Spinner from '../components/Spinner';
 
 const Admin = () => {
   const [users, setUsers] = useState([]);
@@ -49,7 +50,7 @@ const Admin = () => {
       </div>
 
       {loading ? (
-        <p className="text-sm text-ink-400">Loading users…</p>
+        <Spinner center label="Loading users…" />
       ) : (
         <div className="card overflow-x-auto">
           <table className="w-full text-sm">
