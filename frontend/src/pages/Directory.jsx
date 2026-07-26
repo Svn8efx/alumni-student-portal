@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Search, Briefcase, GraduationCap, Check, Clock, MessageCircle } from 'lucide-react';
+import { Search, Briefcase, GraduationCap, Check, Clock, MessageCircle, X } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -33,7 +33,7 @@ const Directory = () => {
     connectionsRes.data.data.forEach((c) => {
       const isRequester = c.requester._id === user._id;
       const otherId = isRequester ? c.receiver._id : c.requester._id;
-      map[otherId] = { status: c.status, direction: isRequester ? 'sent' : 'received' };
+      map[otherId] = { id: c._id, status: c.status, direction: isRequester ? 'sent' : 'received' };
     });
     setConnectionMap(map);
     setLoading(false);
@@ -51,11 +51,30 @@ const Directory = () => {
 
   const handleConnect = async (receiverId) => {
     try {
-      await api.post('/connections', { receiverId, message: 'Hi! I would love to connect.' });
-      setConnectionMap((m) => ({ ...m, [receiverId]: { status: 'pending', direction: 'sent' } }));
+      const { data } = await api.post('/connections', { receiverId, message: 'Hi! I would love to connect.' });
+      setConnectionMap((m) => ({
+        ...m,
+        [receiverId]: { id: data.data._id, status: 'pending', direction: 'sent' },
+      }));
       toast.success('Connection request sent.');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Could not send request');
+    }
+  };
+
+  const handleCancel = async (otherUserId) => {
+    const connection = connectionMap[otherUserId];
+    if (!connection) return;
+    try {
+      await api.delete(`/connections/${connection.id}`);
+      setConnectionMap((m) => {
+        const next = { ...m };
+        delete next[otherUserId];
+        return next;
+      });
+      toast.success('Request cancelled.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not cancel request');
     }
   };
 
@@ -148,9 +167,22 @@ const Directory = () => {
                       <MessageCircle size={14} />
                     </button>
                   </div>
+                ) : connection?.status === 'pending' && connection.direction === 'sent' ? (
+                  <div className="mt-auto flex gap-2">
+                    <button disabled className="btn-secondary flex-1 text-xs !opacity-100 !cursor-default">
+                      <Clock size={14} /> Request sent
+                    </button>
+                    <button
+                      onClick={() => handleCancel(u._id)}
+                      title="Cancel request"
+                      className="btn-secondary px-3 text-xs shrink-0 hover:text-red-600 hover:border-red-300"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
                 ) : connection?.status === 'pending' ? (
                   <button disabled className="btn-secondary mt-auto text-xs !opacity-100 !cursor-default">
-                    <Clock size={14} /> {connection.direction === 'sent' ? 'Request sent' : 'Respond in Connections'}
+                    <Clock size={14} /> Respond in Connections
                   </button>
                 ) : (
                   <button

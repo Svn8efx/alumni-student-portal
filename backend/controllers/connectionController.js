@@ -91,6 +91,28 @@ const respondToConnectionRequest = asyncHandler(async (req, res) => {
   res.json({ success: true, data: connection });
 });
 
+// @desc    Cancel a pending request you sent (deletes it)
+// @route   DELETE /api/connections/:id
+// @access  Private
+const cancelConnectionRequest = asyncHandler(async (req, res) => {
+  const connection = await Connection.findById(req.params.id);
+  if (!connection) {
+    res.status(404);
+    throw new Error('Connection request not found');
+  }
+  if (connection.requester.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('Only the requester can cancel this request');
+  }
+  if (connection.status !== 'pending') {
+    res.status(400);
+    throw new Error('Only pending requests can be cancelled');
+  }
+
+  await connection.deleteOne();
+  res.json({ success: true, data: { id: req.params.id } });
+});
+
 // @desc    List my connections (sent + received), optionally filtered by status
 // @route   GET /api/connections?status=accepted
 // @access  Private
@@ -109,4 +131,9 @@ const getMyConnections = asyncHandler(async (req, res) => {
   res.json({ success: true, data: connections });
 });
 
-module.exports = { sendConnectionRequest, respondToConnectionRequest, getMyConnections };
+module.exports = {
+  sendConnectionRequest,
+  respondToConnectionRequest,
+  cancelConnectionRequest,
+  getMyConnections,
+};
