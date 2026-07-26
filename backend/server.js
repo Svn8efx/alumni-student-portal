@@ -4,9 +4,11 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const http = require('http');
+const jwt = require('jsonwebtoken');
 const { Server } = require('socket.io');
 
 const connectDB = require('./config/db');
+const User = require('./models/User');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
 // Route modules
@@ -30,12 +32,29 @@ const io = new Server(server, {
   cors: { origin: process.env.CLIENT_URL || '*', methods: ['GET', 'POST'] },
 });
 
+// Authenticate every socket connection via the JWT sent in the handshake.
+// The verified user id (not anything the client claims) decides which private
+// room the socket joins — so nobody can subscribe to another user's
+// notifications or messages.
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error('Not authorized: no token'));
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('_id isActive');
+    if (!user || !user.isActive) return next(new Error('Not authorized: invalid user'));
+
+    socket.userId = user._id.toString();
+    next();
+  } catch (err) {
+    next(new Error('Not authorized: token failed'));
+  }
+});
+
 io.on('connection', (socket) => {
-  // Client emits 'join' with its own userId right after connecting so we can
-  // route private events (notifications, messages) to a per-user room.
-  socket.on('join', (userId) => {
-    if (userId) socket.join(userId.toString());
-  });
+  // Join the room for the VERIFIED user — no client-supplied id involved.
+  socket.join(socket.userId);
 
   socket.on('disconnect', () => {
     // no-op: rooms are cleaned up automatically by socket.io
@@ -60,8 +79,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/connections', connectionRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/forum', forumRoutes);
-app.use('/api/jobs', jobRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/jobs', jobRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/notifications', notificationRoutes);
 

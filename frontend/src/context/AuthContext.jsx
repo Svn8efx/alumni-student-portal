@@ -37,11 +37,15 @@ export const AuthProvider = ({ children }) => {
     bootstrap();
   }, []);
 
-  // Establish a socket connection for real-time notifications/messages once logged in
+  // Establish a socket connection for real-time notifications/messages once
+  // logged in. The JWT rides along in the handshake — the server verifies it
+  // and joins us to our own private room; no client-side 'join' emit anymore.
   useEffect(() => {
     if (!user) return;
-    const s = io(SOCKET_URL, { transports: ['websocket'] });
-    s.emit('join', user._id);
+    const s = io(SOCKET_URL, {
+      transports: ['websocket'],
+      auth: { token: localStorage.getItem('token') },
+    });
     setSocket(s);
     return () => s.disconnect();
   }, [user?._id]);
