@@ -45,6 +45,39 @@ const sendMessage = asyncHandler(async (req, res) => {
   res.status(201).json({ success: true, data: message });
 });
 
+// @desc    Delete a message you sent (WhatsApp-style: tombstone for both sides)
+// @route   DELETE /api/messages/:id
+// @access  Private
+const deleteMessage = asyncHandler(async (req, res) => {
+  const message = await Message.findById(req.params.id);
+  if (!message) {
+    res.status(404);
+    throw new Error('Message not found');
+  }
+  if (message.sender.toString() !== req.user._id.toString()) {
+    res.status(403);
+    throw new Error('You can only delete your own messages');
+  }
+  if (message.isDeleted) {
+    res.status(400);
+    throw new Error('Message is already deleted');
+  }
+
+  message.isDeleted = true;
+  message.content = ''; // wipe the text — it should not survive in the DB
+  await message.save();
+
+  // Tell the other party in real time so the tombstone appears live
+  if (req.io) {
+    req.io.to(message.receiver.toString()).emit('message_deleted', {
+      _id: message._id,
+      conversationId: message.conversationId,
+    });
+  }
+
+  res.json({ success: true, data: { id: message._id } });
+});
+
 // @desc    Get full conversation with a specific user
 // @route   GET /api/messages/:userId
 // @access  Private
@@ -85,4 +118,4 @@ const getInbox = asyncHandler(async (req, res) => {
   res.json({ success: true, data: messages });
 });
 
-module.exports = { sendMessage, getConversation, getInbox };
+module.exports = { sendMessage, deleteMessage, getConversation, getInbox };

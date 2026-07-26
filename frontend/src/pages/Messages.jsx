@@ -98,7 +98,9 @@ const Messages = () => {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-ink-800 text-sm truncate">{person?.name || 'Unknown user'}</p>
-                  <p className="text-xs text-ink-500 truncate">{conv.lastMessage.content}</p>
+                  <p className={`text-xs truncate ${conv.lastMessage.isDeleted ? 'text-ink-400 italic' : 'text-ink-500'}`}>
+                    {conv.lastMessage.isDeleted ? 'This message was deleted' : conv.lastMessage.content}
+                  </p>
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-xs text-ink-400">{formatDistanceToNow(new Date(conv.lastMessage.createdAt), { addSuffix: true })}</p>

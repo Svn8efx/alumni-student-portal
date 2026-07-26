@@ -9,6 +9,9 @@ const messageSchema = new mongoose.Schema(
     receiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     content: { type: String, required: true, maxlength: 2000 },
     isRead: { type: Boolean, default: false },
+    // WhatsApp-style delete: message stays in the thread as a tombstone,
+    // content is wiped for privacy.
+    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

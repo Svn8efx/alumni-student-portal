@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Send, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 const Conversation = () => {
   const { userId } = useParams();
   const { user, socket } = useAuth();
+  const confirmDialog = useConfirm();
   const [messages, setMessages] = useState([]);
   const [otherUser, setOtherUser] = useState(null);
   const [text, setText] = useState('');
@@ -33,16 +35,26 @@ const Conversation = () => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Live-append messages arriving over the socket for this conversation
+  // Live-append messages arriving over the socket for this conversation,
+  // and live-tombstone messages the other person deletes
   useEffect(() => {
     if (!socket) return;
-    const handler = (msg) => {
+    const onNew = (msg) => {
       if (msg.sender === userId || msg.receiver === userId) {
         setMessages((prev) => [...prev, msg]);
       }
     };
-    socket.on('new_message', handler);
-    return () => socket.off('new_message', handler);
+    const onDeleted = ({ _id }) => {
+      setMessages((prev) =>
+        prev.map((m) => (m._id === _id ? { ...m, isDeleted: true, content: '' } : m))
+      );
+    };
+    socket.on('new_message', onNew);
+    socket.on('message_deleted', onDeleted);
+    return () => {
+      socket.off('new_message', onNew);
+      socket.off('message_deleted', onDeleted);
+    };
   }, [socket, userId]);
 
   const handleSend = async (e) => {
@@ -54,6 +66,21 @@ const Conversation = () => {
       setText('');
     } catch (err) {
       setError(err.response?.data?.message || 'You must be connected to message this user.');
+    }
+  };
+
+  const handleDelete = async (messageId) => {
+    const ok = await confirmDialog('This message will be deleted for everyone.', {
+      title: 'Delete message?',
+    });
+    if (!ok) return;
+    try {
+      await api.delete(`/messages/${messageId}`);
+      setMessages((prev) =>
+        prev.map((m) => (m._id === messageId ? { ...m, isDeleted: true, content: '' } : m))
+      );
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not delete message');
     }
   };
 
@@ -70,18 +97,34 @@ const Conversation = () => {
       {error && <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-sm px-3 py-2 mt-3">{error}</p>}
 
       <div className="flex-1 overflow-y-auto py-4 space-y-3">
-        {messages.map((m) => (
-          <div key={m._id} className={`flex ${m.sender === user._id ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[75%] px-3.5 py-2 rounded-sm text-sm ${
-              m.sender === user._id ? 'bg-ink-800 text-white' : 'bg-white dark:bg-ink-700 border border-ink-100 dark:border-ink-600 text-ink-700'
-            }`}>
-              <p>{m.content}</p>
-              <p className={`text-[10px] mt-1 ${m.sender === user._id ? 'text-ink-300' : 'text-ink-400'}`}>
-                {format(new Date(m.createdAt), 'p')}
-              </p>
+        {messages.map((m) => {
+          const mine = m.sender === user._id;
+          return (
+            <div key={m._id} className={`flex items-center gap-2 group ${mine ? 'justify-end' : 'justify-start'}`}>
+              {mine && !m.isDeleted && (
+                <button
+                  onClick={() => handleDelete(m._id)}
+                  title="Delete message"
+                  className="p-1.5 text-ink-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+              <div className={`max-w-[75%] px-3.5 py-2 rounded-sm text-sm ${
+                m.isDeleted
+                  ? 'bg-transparent border border-dashed border-ink-200 dark:border-ink-600 text-ink-400 italic'
+                  : mine
+                  ? 'bg-ink-800 text-white'
+                  : 'bg-white dark:bg-ink-700 border border-ink-100 dark:border-ink-600 text-ink-700'
+              }`}>
+                <p>{m.isDeleted ? 'This message was deleted' : m.content}</p>
+                <p className={`text-[10px] mt-1 ${m.isDeleted ? 'text-ink-300' : mine ? 'text-ink-300' : 'text-ink-400'}`}>
+                  {format(new Date(m.createdAt), 'p')}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         <div ref={bottomRef} />
       </div>
 
