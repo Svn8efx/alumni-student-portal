@@ -55,8 +55,14 @@ const Dashboard = () => {
 
   return (
     <div className="relative">
+      {/* The wash is a normal absolutely-positioned sibling inside this same
+          "relative" wrapper — NOT fixed with a negative z-index anymore.
+          The previous fixed/-z-10 approach let AppLayout's own opaque
+          background paint over it, making the wash invisible and leaving
+          the glass cards with nothing to actually blur. This version can't
+          be blocked by any ancestor's stacking context. */}
       <div
-        className="fixed inset-0 pointer-events-none -z-10"
+        className="absolute inset-0 pointer-events-none"
         style={{
           background: `
             radial-gradient(circle at 12% 15%, rgba(205,162,63,0.14), transparent 40%),
@@ -66,7 +72,7 @@ const Dashboard = () => {
         }}
       />
 
-      <div className="space-y-8">
+      <div className="relative z-10 space-y-8">
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-2xl">Welcome, {user.name.split(' ')[0]}</h1>
