@@ -26,9 +26,18 @@ const Directory = () => {
   const [loading, setLoading] = useState(true);
   const [connectionMap, setConnectionMap] = useState({});
   const [expandedBios, setExpandedBios] = useState(new Set());
+  const [expandedSkills, setExpandedSkills] = useState(new Set());
 
   const toggleBio = (id) => {
     setExpandedBios((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSkills = (id) => {
+    setExpandedSkills((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
       return next;
@@ -133,8 +142,9 @@ const Directory = () => {
               type="button"
               key={r || 'all'}
               onClick={() => { setRole(r); setSearchParams(r ? { role: r } : {}); }}
-              className={`px-4 py-2.5 rounded-md text-sm font-medium border capitalize transition-colors ${role === r ? 'bg-ink-800 text-white border-ink-800' : 'border-ink-200 text-ink-600 hover:bg-ink-50'
-                }`}
+              className={`px-4 py-2.5 rounded-md text-sm font-medium border capitalize transition-colors ${
+                role === r ? 'bg-ink-800 text-white border-ink-800' : 'border-ink-200 text-ink-600 hover:bg-ink-50'
+              }`}
             >
               {r || 'All'}
             </button>
@@ -152,6 +162,9 @@ const Directory = () => {
           {users.map((u) => {
             const connection = connectionMap[u._id];
             const bioExpanded = expandedBios.has(u._id);
+            const skillsExpanded = expandedSkills.has(u._id);
+            const visibleSkills = skillsExpanded ? u.skills : (u.skills || []).slice(0, 4);
+            const hiddenCount = (u.skills?.length || 0) - 4;
             return (
               <div key={u._id} className="card p-5 flex flex-col">
                 <div className="flex items-center gap-3 mb-3">
@@ -209,13 +222,17 @@ const Directory = () => {
 
                 {u.skills?.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-4">
-                    {u.skills.slice(0, 4).map((s) => (
+                    {visibleSkills.map((s) => (
                       <span key={s} className="text-[11px] bg-ink-50 text-ink-600 px-2 py-0.5 rounded-full">{s}</span>
                     ))}
-                    {u.skills.length > 4 && (
-                      <span className="text-[11px] bg-brass-400/10 text-brass-600 dark:text-brass-300 px-2 py-0.5 rounded-full font-medium">
-                        +{u.skills.length - 4} more
-                      </span>
+                    {hiddenCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => toggleSkills(u._id)}
+                        className="text-[11px] bg-brass-400/10 text-brass-600 dark:text-brass-300 px-2 py-0.5 rounded-full font-medium hover:bg-brass-400/20 transition-colors"
+                      >
+                        {skillsExpanded ? 'Show less' : `+${hiddenCount} more`}
+                      </button>
                     )}
                   </div>
                 )}
