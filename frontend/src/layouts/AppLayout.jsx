@@ -41,7 +41,10 @@ const AppLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-paper dark:bg-ink-900 flex">
-      <aside className="hidden md:flex md:flex-col w-64 shrink-0 bg-ink-900 text-paper/90 md:sticky md:top-0 md:h-screen">
+      {/* relative + z-20: keeps this whole rail (including the logo block)
+          painted ABOVE the ambient glow layer in the content column, so the
+          glow's blur never bleeds onto the sidebar/logo. */}
+      <aside className="hidden md:flex md:flex-col w-64 shrink-0 bg-ink-900 text-paper/90 md:sticky md:top-0 md:h-screen relative z-20">
         <Link
           to="/dashboard"
           className="h-16 shrink-0 px-5 border-b border-white/10 flex items-center gap-2.5 hover:bg-white/5 transition-colors"
@@ -55,7 +58,9 @@ const AppLayout = ({ children }) => {
           </div>
         </Link>
 
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {/* Divider now lives on the nav itself, so it runs from the Dashboard
+            row down to the bottom of the sidebar — not behind the logo. */}
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto border-r border-white/10">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={navItemClass}>
               <Icon size={18} />
@@ -73,11 +78,12 @@ const AppLayout = ({ children }) => {
 
       <div className="flex-1 flex flex-col min-w-0 relative">
         {/* Ambient glow layer — four blurred color blobs, fixed to the viewport,
-            drifting and breathing very slowly. Animated with transform/opacity
-            only, so they're GPU-composited and cost nothing while scrolling.
-            Statically positioned exactly where the old radial-gradient washes
-            sat; the animations in index.css move them gently around "home". */}
-        <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+            drifting and breathing very slowly. z-0 keeps it BEHIND the sidebar
+            (z-20) and header (z-30) in the stacking order, so it never bleeds
+            onto them — only visible in the open content area. Animated with
+            transform/opacity only, so it's GPU-composited and costs nothing
+            while scrolling. */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
           <div
             className="glow-blob animate-glow-drift-1"
             style={{
