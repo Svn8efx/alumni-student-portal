@@ -25,6 +25,15 @@ const Directory = () => {
   const [role, setRole] = useState(searchParams.get('role') || '');
   const [loading, setLoading] = useState(true);
   const [connectionMap, setConnectionMap] = useState({});
+  const [expandedBios, setExpandedBios] = useState(new Set());
+
+  const toggleBio = (id) => {
+    setExpandedBios((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
 
   const load = async () => {
     setLoading(true);
@@ -128,6 +137,7 @@ const Directory = () => {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {users.map((u) => {
             const connection = connectionMap[u._id];
+            const bioExpanded = expandedBios.has(u._id);
             return (
               <div key={u._id} className="card p-5 flex flex-col">
                 <div className="flex items-center gap-3 mb-3">
@@ -168,7 +178,20 @@ const Directory = () => {
                   </span>
                 )}
 
-                {u.bio && <p className="text-xs text-ink-500 line-clamp-2 mb-4">{u.bio}</p>}
+                {u.bio && (
+                  <div className="mb-4">
+                    <p className={`text-xs text-ink-500 ${bioExpanded ? '' : 'line-clamp-2'}`}>{u.bio}</p>
+                    {u.bio.length > 90 && (
+                      <button
+                        type="button"
+                        onClick={() => toggleBio(u._id)}
+                        className="text-[11px] font-medium text-brass-600 hover:underline mt-0.5"
+                      >
+                        {bioExpanded ? 'Show less' : 'Read more'}
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {u.skills?.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-4">
