@@ -187,6 +187,11 @@ const Profile = () => {
                   {previewSkills.slice(0, 4).map((s) => (
                     <span key={s} className="text-[11px] bg-ink-50 text-ink-600 px-2 py-0.5 rounded-full">{s}</span>
                   ))}
+                  {previewSkills.length > 4 && (
+                    <span className="text-[11px] bg-brass-400/10 text-brass-600 dark:text-brass-300 px-2 py-0.5 rounded-full font-medium">
+                      +{previewSkills.length - 4} more
+                    </span>
+                  )}
                 </div>
               )}
 

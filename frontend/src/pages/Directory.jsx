@@ -133,9 +133,8 @@ const Directory = () => {
               type="button"
               key={r || 'all'}
               onClick={() => { setRole(r); setSearchParams(r ? { role: r } : {}); }}
-              className={`px-4 py-2.5 rounded-md text-sm font-medium border capitalize transition-colors ${
-                role === r ? 'bg-ink-800 text-white border-ink-800' : 'border-ink-200 text-ink-600 hover:bg-ink-50'
-              }`}
+              className={`px-4 py-2.5 rounded-md text-sm font-medium border capitalize transition-colors ${role === r ? 'bg-ink-800 text-white border-ink-800' : 'border-ink-200 text-ink-600 hover:bg-ink-50'
+                }`}
             >
               {r || 'All'}
             </button>
@@ -213,6 +212,11 @@ const Directory = () => {
                     {u.skills.slice(0, 4).map((s) => (
                       <span key={s} className="text-[11px] bg-ink-50 text-ink-600 px-2 py-0.5 rounded-full">{s}</span>
                     ))}
+                    {u.skills.length > 4 && (
+                      <span className="text-[11px] bg-brass-400/10 text-brass-600 dark:text-brass-300 px-2 py-0.5 rounded-full font-medium">
+                        +{u.skills.length - 4} more
+                      </span>
+                    )}
                   </div>
                 )}
 
