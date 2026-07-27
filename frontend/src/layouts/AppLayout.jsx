@@ -41,7 +41,7 @@ const AppLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-paper dark:bg-ink-900 flex">
-      <aside className="hidden md:flex md:flex-col w-64 shrink-0 bg-ink-900 text-paper/90 md:sticky md:top-0 md:h-screen border-r border-white/10">
+      <aside className="hidden md:flex md:flex-col w-64 shrink-0 bg-ink-900 text-paper/90 md:sticky md:top-0 md:h-screen">
         <Link
           to="/dashboard"
           className="h-16 shrink-0 px-5 border-b border-white/10 flex items-center gap-2.5 hover:bg-white/5 transition-colors"
