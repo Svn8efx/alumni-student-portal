@@ -95,6 +95,21 @@ const Directory = () => {
     }
   };
 
+  const handleRespond = async (otherUserId, status) => {
+    const connection = connectionMap[otherUserId];
+    if (!connection) return;
+    try {
+      await api.patch(`/connections/${connection.id}`, { status });
+      setConnectionMap((m) => ({
+        ...m,
+        [otherUserId]: { ...connection, status },
+      }));
+      toast.success(status === 'accepted' ? 'Connection accepted.' : 'Request declined.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not respond to request');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -227,10 +242,22 @@ const Directory = () => {
                       <X size={14} />
                     </button>
                   </div>
-                ) : connection?.status === 'pending' ? (
-                  <button disabled className="btn-secondary mt-auto text-xs !opacity-100 !cursor-default">
-                    <Clock size={14} /> Respond in Connections
-                  </button>
+                ) : connection?.status === 'pending' && connection.direction === 'received' ? (
+                  <div className="mt-auto flex gap-2">
+                    <button
+                      onClick={() => handleRespond(u._id, 'accepted')}
+                      className="btn-primary flex-1 text-xs"
+                    >
+                      <Check size={14} /> Accept
+                    </button>
+                    <button
+                      onClick={() => handleRespond(u._id, 'rejected')}
+                      title="Decline"
+                      className="btn-secondary px-3 text-xs shrink-0 hover:text-red-600 hover:border-red-300"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
                 ) : (
                   <button
                     onClick={() => handleConnect(u._id)}
