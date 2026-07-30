@@ -38,9 +38,11 @@ Highlights, grouped by area:
   on the `ogl` library) on the Landing, Login, and Register pages.
 - **Unified app chrome** — the sidebar and topbar share one deep-navy frame with consistent
   hairline borders, both pinned so navigation, the notification bell, and sign-out are always
-  visible. Nav items brighten on hover with a brass indicator bar that grows in and stays lit
-  on the active page. The clickable logo returns to the Dashboard, and a brass graduation-cap
-  favicon marks the tab.
+  visible. The logo block is deliberately kept flat and crisp above the ambient glow layer
+  (the glow bleeds into the rest of the sidebar for atmosphere, but never behind the logo
+  itself), with the nav divider running from the first nav item down to the bottom. Nav items
+  brighten on hover with a brass indicator bar that grows in and stays lit on the active page.
+  The clickable logo returns to the Dashboard, and a brass graduation-cap favicon marks the tab.
 - **Redesigned Login & Register** — from plain centered forms into rich two-column layouts
   (headline + stats on one side, form on the other), matching the Landing page's structure.
 - **Glassmorphism cards site-wide** — the shared `.card` class uses a frosted-glass treatment
@@ -62,8 +64,16 @@ Highlights, grouped by area:
   approach (the platform's core purpose, finally visible).
 - **LinkedIn on cards** — profiles with a LinkedIn URL get a click-through icon on their
   directory card.
+- **Expandable bios** — long bios clamp to two lines with a "Read more / Show less" toggle
+  per card, instead of silently cutting off with no way to read the rest.
+- **"+N more" skills indicator** — cards show the first four skills; if a profile lists more,
+  a small brass pill shows how many are hidden rather than silently dropping them (all skills
+  are still saved and searchable — only the card display was capped).
+- **Respond to requests without leaving the page** — an incoming connection request shows
+  live Accept/Decline buttons directly on the sender's Directory card, instead of a dead-end
+  "Respond in Connections" button that required navigating away.
 - **Real connection status on every card** — Connect, Request sent (with one-click cancel),
-  Respond in Connections, or Connected (with a message shortcut).
+  Accept/Decline (for incoming), or Connected (with a message shortcut).
 
 ### Profile & Account
 - **Live directory-card preview** — the Profile page renders an exact replica of your
@@ -77,8 +87,9 @@ Highlights, grouped by area:
 - **Delete for everyone** — senders can delete their own messages; the message becomes an
   italic *"This message was deleted"* tombstone for **both** parties in real time over the
   socket, and its content is genuinely wiped from the database.
-- **Role badges in messaging** — inbox rows and the conversation header show who you're
-  talking to, and the inbox preview handles deleted last-messages gracefully.
+- **Role badges in messaging** — inbox rows, the "New Message" picker, and the conversation
+  header all show who you're talking to, and the inbox preview handles deleted last-messages
+  gracefully.
 - **Full-width layouts** — Feed, Messages, and Conversation use the full content width like
   the Forum, instead of a cramped left-pinned column.
 
@@ -122,6 +133,11 @@ Real bugs found, diagnosed, and fixed along the way:
 - **Native widgets ignored the theme** — dropdown option lists rendered white-on-white
   (unreadable) and number inputs showed clunky spinner arrows; both are now styled directly
   in `index.css`.
+- **Invisible text on hover in dark mode** — the global dark-mode overrides rebalance plain
+  utility classes (e.g. `bg-ink-50`) but not their `hover:` variants, so a couple of
+  interactive rows (like the "New Message" connection picker) showed light text on a light
+  hover background. Fixed by switching those hover states to a theme-safe translucent
+  (`hover:bg-white/10`) instead of relying on the override.
 - **Sidebar and topbar scrolled away** — the app shell now pins both, so navigation, the
   notification bell, and sign-out are always visible.
 
@@ -326,9 +342,10 @@ committed, dark-only theme:
 - **Type:** Source Serif 4 for display headings (evokes a printed register/diploma), Inter for
   body and UI text, IBM Plex Mono for identifiers (roll numbers, timestamps).
 - **Surfaces & atmosphere:** glassmorphism cards (translucent fill + backdrop blur + soft
-  shadow) with gently rounded corners; slow-drifting ambient glow blobs behind the content;
-  a WebGL aurora on the public pages; one continuous navy chrome frame (sidebar + topbar)
-  with hairline borders.
+  shadow) with gently rounded corners; slow-drifting ambient glow blobs behind the content
+  and sidebar (deliberately excluded from the logo block, which stays flat and legible); a
+  WebGL aurora on the public pages; one continuous navy chrome frame (sidebar + topbar) with
+  hairline borders.
 - **Signature element:** the `RoleBadge` "wax-seal" tag used everywhere a person appears —
   a **gold** seal for alumni and a **platinum** seal for students — plus the brass
   "Open to mentor" pill on mentoring alumni's directory cards.
@@ -339,7 +356,9 @@ committed, dark-only theme:
 - **Dark implementation:** `class="dark"` on `<html>` plus a set of global overrides in
   `index.css` that rebalance the light-mode utility classes wherever they appear — verified
   with scripted contrast-ratio checks (WCAG AA, 4.5:1). Native widgets (dropdown option
-  lists, number inputs) are styled directly so they match the theme.
+  lists, number inputs) are styled directly so they match the theme; a handful of interactive
+  hover states are set to theme-safe translucent whites rather than relying on the automatic
+  override, since `hover:` variants aren't covered by it.
 
 ---
 
@@ -409,11 +428,12 @@ are public, and printed admin credentials would hand full destructive access to 
   different views (mentorship CTA for students, "post opportunity" CTA for alumni); the
   Admin Console is shown live with the privately-held admin credentials.
 - Suggested live-demo path: register a student → browse the Directory (note the mentor
-  badges and LinkedIn links) → send a connection request (cancel and re-send it to show the
-  full request lifecycle) → log in as the alumnus → accept it → exchange messages (delete
-  one to show the live "This message was deleted" tombstone appear on both screens) → post
-  a job and watch the student's notification bell light up in real time → host an event and
-  see everyone notified.
+  badges, LinkedIn links, and expandable bios) → send a connection request (cancel and
+  re-send it to show the full request lifecycle) → log in as the alumnus → **accept the
+  request directly from its Directory card** → exchange messages (delete one to show the
+  live "This message was deleted" tombstone appear on both screens) → post a job and watch
+  the student's notification bell light up in real time → host an event and see everyone
+  notified.
 - Admins can delete any post, comment, forum thread, or reply directly from the UI — useful to
   demonstrate the platform's content moderation story.
 - The codebase is intentionally documented with inline comments explaining *why*, not just
