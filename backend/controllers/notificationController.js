@@ -36,4 +36,33 @@ const markAllAsRead = asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'All notifications marked as read' });
 });
 
-module.exports = { getMyNotifications, markAsRead, markAllAsRead };
+// @desc    Delete a single notification
+// @route   DELETE /api/notifications/:id
+// @access  Private
+const deleteNotification = asyncHandler(async (req, res) => {
+  const notification = await Notification.findOneAndDelete({
+    _id: req.params.id,
+    recipient: req.user._id,
+  });
+  if (!notification) {
+    res.status(404);
+    throw new Error('Notification not found');
+  }
+  res.json({ success: true, data: { id: req.params.id } });
+});
+
+// @desc    Delete all of my notifications
+// @route   DELETE /api/notifications
+// @access  Private
+const deleteAllNotifications = asyncHandler(async (req, res) => {
+  await Notification.deleteMany({ recipient: req.user._id });
+  res.json({ success: true, message: 'All notifications deleted' });
+});
+
+module.exports = {
+  getMyNotifications,
+  markAsRead,
+  markAllAsRead,
+  deleteNotification,
+  deleteAllNotifications,
+};

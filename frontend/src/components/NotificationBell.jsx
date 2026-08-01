@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 const NotificationBell = () => {
   const { socket } = useAuth();
+  const confirmDialog = useConfirm();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -61,6 +63,23 @@ const NotificationBell = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
   };
 
+  const deleteOne = async (e, n) => {
+    e.stopPropagation(); // don't trigger the row's own click-to-open handler
+    await api.delete(`/notifications/${n._id}`);
+    setNotifications((prev) => prev.filter((x) => x._id !== n._id));
+    if (!n.isRead) setUnreadCount((c) => Math.max(0, c - 1));
+  };
+
+  const clearAll = async () => {
+    const ok = await confirmDialog('This will permanently remove all your notifications.', {
+      title: 'Clear all notifications?',
+    });
+    if (!ok) return;
+    await api.delete('/notifications');
+    setNotifications([]);
+    setUnreadCount(0);
+  };
+
   return (
     <div className="relative" ref={ref}>
       <button
@@ -80,21 +99,28 @@ const NotificationBell = () => {
         <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto card z-50">
           <div className="flex items-center justify-between px-4 py-3 border-b border-ink-100 dark:border-ink-700">
             <h3 className="text-sm font-semibold text-ink-800">Notifications</h3>
-            {unreadCount > 0 && (
-              <button onClick={markAllRead} className="text-xs text-brass-600 hover:underline">
-                Mark all read
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {unreadCount > 0 && (
+                <button onClick={markAllRead} className="text-xs text-brass-600 hover:underline">
+                  Mark all read
+                </button>
+              )}
+              {notifications.length > 0 && (
+                <button onClick={clearAll} className="text-xs text-ink-400 hover:text-red-600 hover:underline">
+                  Clear all
+                </button>
+              )}
+            </div>
           </div>
           {notifications.length === 0 ? (
             <p className="px-4 py-6 text-sm text-ink-400 text-center">You're all caught up.</p>
           ) : (
             <ul>
               {notifications.map((n) => (
-                <li key={n._id}>
+                <li key={n._id} className="group relative">
                   <button
                     onClick={() => handleClickNotification(n)}
-                    className={`w-full text-left px-4 py-3 text-sm border-b border-ink-50 dark:border-ink-700 hover:bg-ink-50 dark:hover:bg-ink-700 transition-colors ${
+                    className={`w-full text-left px-4 py-3 pr-10 text-sm border-b border-ink-50 dark:border-ink-700 hover:bg-ink-50 dark:hover:bg-ink-700 transition-colors ${
                       !n.isRead ? 'bg-brass-50/60 dark:bg-brass-500/10' : ''
                     }`}
                   >
@@ -102,6 +128,13 @@ const NotificationBell = () => {
                     <p className="text-xs text-ink-400 mt-0.5">
                       {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
                     </p>
+                  </button>
+                  <button
+                    onClick={(e) => deleteOne(e, n)}
+                    title="Delete notification"
+                    className="absolute top-1/2 -translate-y-1/2 right-3 p-1 rounded-full text-ink-300 hover:text-red-600 hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 size={14} />
                   </button>
                 </li>
               ))}
