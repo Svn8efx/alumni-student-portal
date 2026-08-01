@@ -54,7 +54,7 @@ const PostCard = ({ post, onLike, onComment, onDeletePost, onDeleteComment, curr
 
       <p className="text-sm text-ink-700 leading-relaxed whitespace-pre-wrap mb-4">{post.content}</p>
 
-      <div className="flex items-center gap-4 text-sm text-ink-500 border-t border-ink-50 pt-3">
+      <div className="flex items-center gap-4 text-sm text-ink-500 border-t border-ink-100 dark:border-ink-700 pt-3">
         <button onClick={() => onLike(post._id)} className={`flex items-center gap-1.5 hover:text-brass-600 ${liked ? 'text-brass-600' : ''}`}>
           <Heart size={16} fill={liked ? 'currentColor' : 'none'} /> {post.likes.length}
         </button>
@@ -64,18 +64,24 @@ const PostCard = ({ post, onLike, onComment, onDeletePost, onDeleteComment, curr
       </div>
 
       {showComments && (
-        <div className="mt-3 pt-3 border-t border-ink-50 space-y-3">
+        <div className="mt-4 pt-4 border-t border-ink-100 dark:border-ink-700 space-y-2.5">
           {post.comments.map((c) => {
             const canDeleteComment = c.author._id === currentUser._id || currentUser.role === 'admin';
             return (
-              <div key={c._id} className="flex gap-2 text-sm items-start group">
-                <span className="font-medium text-ink-700 shrink-0">{c.author.name}:</span>
-                <span className="text-ink-600 flex-1">{c.content}</span>
+              <div
+                key={c._id}
+                className="group relative rounded-md border border-ink-100 dark:border-ink-700 bg-ink-50/60 dark:bg-white/[0.03] px-3.5 py-2.5"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-medium text-ink-700">{c.author.name}</span>
+                  <RoleBadge role={c.author.role} />
+                </div>
+                <p className="text-sm text-ink-600 pr-6">{c.content}</p>
                 {canDeleteComment && (
                   <button
                     onClick={() => onDeleteComment(post._id, c._id)}
                     title="Delete comment"
-                    className="p-1 text-ink-300 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+                    className="absolute top-2.5 right-2.5 p-1 rounded-full text-ink-300 hover:text-red-600 hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <Trash2 size={13} />
                   </button>
@@ -83,7 +89,7 @@ const PostCard = ({ post, onLike, onComment, onDeletePost, onDeleteComment, curr
               </div>
             );
           })}
-          <form onSubmit={submitComment} className="flex gap-2">
+          <form onSubmit={submitComment} className="flex gap-2 pt-1">
             <input
               className="input flex-1 text-sm"
               placeholder="Write a comment…"
