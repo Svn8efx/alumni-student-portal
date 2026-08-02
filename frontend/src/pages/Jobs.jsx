@@ -116,7 +116,9 @@ const Jobs = () => {
                   <p className="font-medium text-ink-800">{job.title}</p>
                   <p className="text-sm text-ink-600">{job.company}</p>
                 </div>
-                <span className="seal-tag bg-brass-100 text-brass-700 shrink-0 capitalize">{job.type}</span>
+                <span className="inline-flex items-center rounded-full border border-brass-400/50 bg-brass-400/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-brass-600 dark:text-brass-300 shrink-0 capitalize">
+                  {job.type}
+                </span>
               </div>
               <div className="flex items-center gap-3 text-xs text-ink-400 mb-3">
                 <span className="flex items-center gap-1"><MapPin size={12} /> {job.location}</span>
@@ -142,7 +144,7 @@ const Jobs = () => {
                 <p className="text-xs text-ink-400 flex items-center gap-1"><Briefcase size={12} /> {job.postedBy?.name}</p>
                 <div className="flex gap-2">
                   {job.applyLink && (
-                    <a href={job.applyLink} target="_blank" rel="noreferrer" className="btn-secondary text-xs px-3 py-1.5">
+                    <a href={job.applyLink} target="_blank" rel="noreferrer" className="btn-brass text-xs px-3.5 py-1.5">
                       Apply <ExternalLink size={12} />
                     </a>
                   )}
