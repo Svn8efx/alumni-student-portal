@@ -32,7 +32,7 @@ const Events = () => {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await api.get('/events', { params: { when } });
+    const { data } = await api.get('/events', { params: { when, limit: 50 } });
     setEvents(data.data);
     setLoading(false);
   };
@@ -41,7 +41,17 @@ const Events = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    await api.post('/events', { ...form, capacity: Number(form.capacity) || 0 });
+    await api.post('/events', {
+      ...form,
+      // datetime-local gives a timezone-less string ("2026-07-28T09:00").
+      // new Date(...) here runs in the BROWSER, which knows the real local
+      // offset (IST etc.), so this converts it to a correct UTC ISO string
+      // before it ever reaches the server — avoiding the server silently
+      // reinterpreting the same string in its own timezone (UTC on Render),
+      // which was shifting every event's stored time by hours.
+      date: new Date(form.date).toISOString(),
+      capacity: Number(form.capacity) || 0,
+    });
     setForm(emptyForm);
     setShowForm(false);
     load();
